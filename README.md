@@ -19,7 +19,7 @@ You have **at minimum**:
 - A workstation or laptop with an NVIDIA GPU (≥ 8 GB VRAM, Ampere or newer for training; older OK for inference).
 - ~50 GB free disk for model weights + datasets + indices.
 - Python 3.12.
-- A Git repository with at least a few thousand non-vendored source files (smaller corpora teach the model nothing useful).
+- A source codebase with at least a few thousand non-vendored source files — origin doesn't matter: a Git repo, a Perforce depot/workspace, a Subversion checkout, or just a plain directory on disk all work. The data layer walks files, not commits. (Smaller corpora teach the model nothing useful.)
 - Optional but useful: a bug tracker (Bugzilla, GitHub Issues, JIRA) and a way to link bugs to fixes.
 
 You do **not** want:
