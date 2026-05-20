@@ -40,6 +40,7 @@ You do **not** want:
 | [#3](https://github.com/alleboudy/codescribe/issues/3) | Fleet guide: parallel & distributed QLoRA across N Dell Precision laptops | How to scale beyond one machine. Two paths: parallel HP sweep (recommended) and distributed data-parallel training (rarely worth it on 1 Gbps LAN). Dell-specific power/thermal config. |
 | [#4](https://github.com/alleboudy/codescribe/issues/4) | RAG plan: bugs+fixes from Perforce/Bugzilla as MCP-served context | How to add inference-time retrieval over your bug-tracker and VCS history. Six per-package phases. Deep MCP primer. Strict-by-default bug↔CL pairing. |
 | [#5](https://github.com/alleboudy/codescribe/issues/5) | Reference Python skeletons for all RAG-stack tooling | Annotated near-runnable templates for every script: Perforce client, Bugzilla REST client, sqlite-vec store, embedder, hybrid retriever, MCP server, llama-server handle, test fixtures. |
+| [#6](https://github.com/alleboudy/codescribe/issues/6) | RAG-only path: skip fine-tuning; plug MCP into Copilot Chat | The shortcut. Skip #2's Phases 1–4 (no training, no `llama-server`). Build only the RAG indexer + MCP server from #4 and wire it into Copilot Chat. Cheap and fast — but **cloud-coupled**, not strictly-local. Read §3 of the issue before committing. |
 
 ### Documentation (`docs/`)
 
