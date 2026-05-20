@@ -32,7 +32,7 @@ The stack is decomposed into four packages that depend on each other in strict o
 data → train → serve → harness → (RAG, MCP server)
 ```
 
-1. **`data/`** — Generic git repo → JSONL train/val/test splits. The training-data pipeline. See [`02-fine-tuning.md § Training data`](02-fine-tuning.md#training-data).
+1. **`data/`** — Any source tree (Git working tree, Perforce workspace, or plain directory) → JSONL train/val/test splits. The training-data pipeline walks files; the source's version-control system is incidental, used only when present for things like commit-SHA metadata in the manifest. See [`02-fine-tuning.md § Training data`](02-fine-tuning.md#training-data-completion-vs-fim-vs-instruction).
 2. **`train/`** — QLoRA fine-tune via Unsloth, eval, GGUF export. See [`02-fine-tuning.md`](02-fine-tuning.md) end-to-end.
 3. **`serve/`** — Vendored `llama.cpp` with an OpenAI-compatible HTTP server. See [`04-inference.md`](04-inference.md).
 4. **Harness** — Whatever interactive coding agent the operator picks: `claw`, `aider`, `continue.dev`, etc. The harness is *bring-your-own*; this stack only guarantees an OpenAI-compatible endpoint. See [`05-harnesses.md`](05-harnesses.md).
