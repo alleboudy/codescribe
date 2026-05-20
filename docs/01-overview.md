@@ -22,7 +22,7 @@ This stack is designed for codebases where **data leaving the host is a failure 
 - No telemetry — no Weights & Biases, no Sentry, no HuggingFace upload, no `requests.post` to anywhere that isn't on the explicit allowlist (HuggingFace Hub for *downloads*, your Perforce server, your Bugzilla server).
 - Default network bind for any HTTP component: `127.0.0.1`. Binding `0.0.0.0` requires an explicit `unsafe_bind_all=True` flag and triggers static-test warnings.
 
-Issue [#1](https://github.com/alleboudy/llm-finetuner/issues/1) operator runbook documents how to verify this posture via an egress audit (`strace -e trace=connect` reports zero non-loopback `connect()` calls during a session).
+Issue [#1](https://github.com/alleboudy/codescribe/issues/1) operator runbook documents how to verify this posture via an egress audit (`strace -e trace=connect` reports zero non-loopback `connect()` calls during a session).
 
 ## The four phases
 
@@ -39,7 +39,7 @@ data → train → serve → harness → (RAG, MCP server)
 
 Layered on top:
 
-5. **RAG** — Local indexer over Perforce + Bugzilla (or any other code+issue stack), retrieval served as MCP tools. See [`07-mcp.md`](07-mcp.md) and [`08-rag.md`](08-rag.md). Issue [#4](https://github.com/alleboudy/llm-finetuner/issues/4) is the canonical plan.
+5. **RAG** — Local indexer over Perforce + Bugzilla (or any other code+issue stack), retrieval served as MCP tools. See [`07-mcp.md`](07-mcp.md) and [`08-rag.md`](08-rag.md). Issue [#4](https://github.com/alleboudy/codescribe/issues/4) is the canonical plan.
 
 ## Why a fine-tune AND not just RAG (or vice versa)
 
@@ -58,7 +58,7 @@ The reference setup is a single laptop with **8 GB VRAM** (the canonical configu
 
 - **RTX 5070 Laptop GPU** (Blackwell, sm_120, 8 GB GDDR7) — the trainer.
 - **GTX 1080 Ti** (Pascal, sm_61, 11 GB GDDR5X) — the auxiliary inference / FA2 cross-build desktop.
-- **RTX 2000 Ada Generation Laptop GPU** (Ada, sm_89, 8 GB GDDR6) — the Dell Precision laptop fleet target (see issue [#3](https://github.com/alleboudy/llm-finetuner/issues/3)).
+- **RTX 2000 Ada Generation Laptop GPU** (Ada, sm_89, 8 GB GDDR6) — the Dell Precision laptop fleet target (see issue [#3](https://github.com/alleboudy/codescribe/issues/3)).
 
 Apple Metal works for *inference* (post a `fix(build): support macOS CPU/Metal fallback in build_llama_cpp.sh` change in this stack's history); it does NOT work for *training* because Unsloth (the training framework) needs CUDA.
 

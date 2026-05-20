@@ -93,7 +93,7 @@ Standard attention requires O(N²) memory for sequence length N — at N=2048, t
 
 **FA2 requires sm_80+** (Ampere or newer). On Pascal/Turing/Volta, you fall back to Unsloth's xformers backend (much slower per step).
 
-This is why issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2)'s reference hardware is Ada/Blackwell, not Pascal. Pascal is in the project's history as the *desktop* (the 1080 Ti) but only for *inference* — it's not the training target.
+This is why issue [#2](https://github.com/alleboudy/codescribe/issues/2)'s reference hardware is Ada/Blackwell, not Pascal. Pascal is in the project's history as the *desktop* (the 1080 Ti) but only for *inference* — it's not the training target.
 
 Installing FA2 is its own adventure: it ships as wheels per (PyTorch, CUDA, Python) combo, and pre-built wheels don't exist for every cell. The reference setup did a cross-build on the Pascal desktop to produce a wheel for the Blackwell laptop. Documented in this stack's history as "FA2 cross-build".
 
@@ -128,13 +128,13 @@ For training:
 - **Watch `nvidia-smi -q -d POWER`** during training — power draw should be steady at the configured TGP.
 - **Watch temperature.gpu** — sustained 95 °C means you're throttled.
 
-[Issue #3](https://github.com/alleboudy/llm-finetuner/issues/3) §2 has the Dell Precision specifics.
+[Issue #3](https://github.com/alleboudy/codescribe/issues/3) §2 has the Dell Precision specifics.
 
 ## Reference hardware in this project
 
 The canonical configurations documented across the issues:
 
-### Training laptop (issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2) reference)
+### Training laptop (issue [#2](https://github.com/alleboudy/codescribe/issues/2) reference)
 - **RTX 5070 Laptop GPU** — Blackwell, sm_120, 8 GB GDDR7, configurable TGP up to ~115 W.
 - i7-14650HX, 24 threads.
 - WSL2 Ubuntu 24.04, 7.6 GB visible RAM (deliberately tight).
@@ -146,7 +146,7 @@ The canonical configurations documented across the issues:
 - Used historically for FA2 cross-build (now a runtime inference option).
 - Inference perf: ~67 tok/s on Q4_K_M Qwen 7B.
 
-### Fleet laptops (issue [#3](https://github.com/alleboudy/llm-finetuner/issues/3))
+### Fleet laptops (issue [#3](https://github.com/alleboudy/codescribe/issues/3))
 - **RTX 2000 Ada Generation Laptop GPU** — Ada, sm_89, 8 GB GDDR6, TGP 35–75 W.
 - Dell Precision 5680 / 5690 / 7680 / 7780 / 7790 (the recent Precision lineup with this GPU option).
 - Training perf (est.): ~28–35 s/step.
@@ -204,4 +204,4 @@ Budget **≥40 GB free** on the partition that holds your project. SSDs are stro
 - Unsloth GPU compatibility: https://docs.unsloth.ai/get-started/system-requirements
 - Flash Attention 2: https://github.com/Dao-AILab/flash-attention
 - llama.cpp build flags: https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md
-- See [issue #3 §2](https://github.com/alleboudy/llm-finetuner/issues/3) for Dell-Precision-specific thermal config.
+- See [issue #3 §2](https://github.com/alleboudy/codescribe/issues/3) for Dell-Precision-specific thermal config.

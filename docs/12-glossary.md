@@ -124,9 +124,9 @@ One-line definitions. For deeper coverage follow the link.
 
 **RAG** — Retrieval-Augmented Generation. See [08-rag.md](08-rag.md).
 
-**Rate limiting** — capping the rate of outbound requests to a remote service. We use a token bucket; see [issue #5 §3](https://github.com/alleboudy/llm-finetuner/issues/5).
+**Rate limiting** — capping the rate of outbound requests to a remote service. We use a token bucket; see [issue #5 §3](https://github.com/alleboudy/codescribe/issues/5).
 
-**Rendezvous** (in `torchrun`) — the bootstrap mechanism for distributed training; coordinates the participating nodes. See [issue #3 §6.2](https://github.com/alleboudy/llm-finetuner/issues/3).
+**Rendezvous** (in `torchrun`) — the bootstrap mechanism for distributed training; coordinates the participating nodes. See [issue #3 §6.2](https://github.com/alleboudy/codescribe/issues/3).
 
 **RRF** — Reciprocal Rank Fusion; the textbook way to merge multiple retrieval rankings.
 
@@ -150,7 +150,7 @@ One-line definitions. For deeper coverage follow the link.
 
 **Token** — the atomic unit a model sees. Roughly 0.75 tokens per English word; coder models have lower tokens-per-code-line due to identifier-aware tokenization.
 
-**Token bucket** — a rate-limiting algorithm. See [issue #5 §3](https://github.com/alleboudy/llm-finetuner/issues/5).
+**Token bucket** — a rate-limiting algorithm. See [issue #5 §3](https://github.com/alleboudy/codescribe/issues/5).
 
 **Tokenizer** — the function that maps text → tokens. Qwen 2.5 Coder uses a 152K-vocab BPE tokenizer with FIM tokens.
 

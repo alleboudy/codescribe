@@ -72,7 +72,7 @@ Tools come in flavours:
 | **workspace-write** | + `write_file`, `edit_file`, `apply_patch` (scoped to the cwd) | Active development; can edit code but can't run arbitrary commands |
 | **danger-full-access** | + `bash` with no allowlist | Fully autonomous; agent can do anything |
 
-Good harnesses make the user pick explicitly. `claw` defaults to `workspace-write`; the read-only smoke test in [issue #1](https://github.com/alleboudy/llm-finetuner/issues/1) §4 uses `--permission-mode read-only`.
+Good harnesses make the user pick explicitly. `claw` defaults to `workspace-write`; the read-only smoke test in [issue #1](https://github.com/alleboudy/codescribe/issues/1) §4 uses `--permission-mode read-only`.
 
 ## Tool-call protocol: OpenAI function calling
 
@@ -125,7 +125,7 @@ Fine-tuning a model to be good at tool calls is mostly about: did its post-train
 [MCP](07-mcp.md) (Model Context Protocol) is the *next layer down*: instead of every harness implementing every tool in its own codebase, an MCP server stands as an external process exposing tools. Any MCP-compatible harness can discover and call those tools. So:
 
 - **Tools defined inside the harness** (e.g., `claw`'s built-in `read_file`, `bash`, `edit_file`): hard-coded; live in the harness binary.
-- **Tools served by MCP servers** (e.g., this stack's `find_similar_bugs` from the RAG plan in [issue #4](https://github.com/alleboudy/llm-finetuner/issues/4)): live in separate processes; spawned by the harness as children over stdio; their schema is discovered at runtime via `tools/list`.
+- **Tools served by MCP servers** (e.g., this stack's `find_similar_bugs` from the RAG plan in [issue #4](https://github.com/alleboudy/codescribe/issues/4)): live in separate processes; spawned by the harness as children over stdio; their schema is discovered at runtime via `tools/list`.
 
 The model doesn't know the difference. The harness handles routing.
 
@@ -142,7 +142,7 @@ A Rust-based coding agent that this stack vendors as a git submodule (`vendor/cl
 - Permission system is granular.
 - Sandbox modes (including Docker `--network none`) for paranoid usage.
 
-**How to use it**: see [issue #1](https://github.com/alleboudy/llm-finetuner/issues/1) for the runbook.
+**How to use it**: see [issue #1](https://github.com/alleboudy/codescribe/issues/1) for the runbook.
 
 ```bash
 OPENAI_BASE_URL=http://127.0.0.1:8080/v1 \
@@ -153,7 +153,7 @@ ANTHROPIC_BASE_URL=http://127.0.0.1:8080/v1 \
     --permission-mode workspace-write
 ```
 
-The `--model openai/...` prefix is load-bearing: `claw` routes by prefix (`openai/...` → OpenAI client; `anthropic/...` → Anthropic client; etc.). Without it, `claw` defaults to Anthropic and demands `ANTHROPIC_API_KEY`. See [issue #1](https://github.com/alleboudy/llm-finetuner/issues/1) §4 pitfall #1.
+The `--model openai/...` prefix is load-bearing: `claw` routes by prefix (`openai/...` → OpenAI client; `anthropic/...` → Anthropic client; etc.). Without it, `claw` defaults to Anthropic and demands `ANTHROPIC_API_KEY`. See [issue #1](https://github.com/alleboudy/codescribe/issues/1) §4 pitfall #1.
 
 ### `aider`
 
@@ -236,7 +236,7 @@ Q3: Strictly-local matters?
   → NO → Copilot Chat with BYOK if the model picker accepts your endpoint.
 ```
 
-For this stack's canonical use case (issue [#1](https://github.com/alleboudy/llm-finetuner/issues/1)), the default is `claw`. It's the vendored harness; the runbook is written against it; the MCP wiring patterns ([issue #4 §13.7](https://github.com/alleboudy/llm-finetuner/issues/4)) are tested against it. Use anything else if you have a reason.
+For this stack's canonical use case (issue [#1](https://github.com/alleboudy/codescribe/issues/1)), the default is `claw`. It's the vendored harness; the runbook is written against it; the MCP wiring patterns ([issue #4 §13.7](https://github.com/alleboudy/codescribe/issues/4)) are tested against it. Use anything else if you have a reason.
 
 ## What a "good" harness gives you
 
