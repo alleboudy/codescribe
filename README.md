@@ -129,7 +129,15 @@ The scoring is deliberately CI-testable: the goal is to produce a working stack,
 
 ## License
 
-Documentation and recipes: CC-BY-4.0 (use, adapt, share with attribution). Code skeletons in [issue #5](https://github.com/alleboudy/llm-finetuner/issues/5) inherit the licenses of the libraries they reference. The fine-tuned model you produce is your own — your codebase, your weights.
+[MIT](LICENSE) — Copyright © 2026 Ahmad Alleboudy.
+
+You're free to use these recipes commercially, modify them, fork them, integrate them into private or public codebases. Standard "AS IS / no warranty / no liability" terms — see [`LICENSE`](LICENSE) for the full text.
+
+The fine-tuned model you produce is your own — your codebase, your weights, your call on how you license it.
+
+### Attribution appreciated (but not legally required)
+
+If you build a fine-tuned model, RAG system, or MCP server based on these recipes, a `based on llm-finetuner by Ahmad Alleboudy` credit in your README, model card, or release notes is appreciated. It's not enforceable through any standard licence — copyright doesn't cover techniques and ideas, only the files themselves — but it helps the project (and the author) see what people are building.
 
 ---
 
