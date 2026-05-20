@@ -161,7 +161,7 @@ These are rough; your numbers will vary with thermal throttling, model variant, 
 
 2. **Binding `0.0.0.0` exposes the model to your LAN/Tailscale net.** For a strictly-local stack this is a posture violation. Refuse to default `host` to `0.0.0.0` and require an explicit `unsafe_bind_all=True` from the caller before allowing it.
 
-Both encoded as static tests in the `serve` package (see issue [#2 §10](https://github.com/alleboudy/llm-finetuner/issues/2) Phase 3).
+Both encoded as static tests in the `serve` package (see issue [#2 §10](https://github.com/alleboudy/codescribe/issues/2) Phase 3).
 
 ## Alternatives: vLLM, Ollama
 

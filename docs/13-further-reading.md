@@ -119,8 +119,8 @@ External links for each topic. Use these when the in-tree docs aren't deep enoug
 
 ## Reproducing this stack from scratch
 
-- The **Phase 1–5 sequence** documented in [issue #2](https://github.com/alleboudy/llm-finetuner/issues/2) is the canonical bootstrap path.
-- The **runbook in [issue #1](https://github.com/alleboudy/llm-finetuner/issues/1)** is how an operator goes from "GGUF on disk" to "interactive coding session against the fine-tune".
-- The **multi-laptop fleet in [issue #3](https://github.com/alleboudy/llm-finetuner/issues/3)** is the scaling path.
-- The **RAG plan in [issue #4](https://github.com/alleboudy/llm-finetuner/issues/4)** is the inference-time augmentation.
-- The **Python skeletons in [issue #5](https://github.com/alleboudy/llm-finetuner/issues/5)** are the implementer's reference.
+- The **Phase 1–5 sequence** documented in [issue #2](https://github.com/alleboudy/codescribe/issues/2) is the canonical bootstrap path.
+- The **runbook in [issue #1](https://github.com/alleboudy/codescribe/issues/1)** is how an operator goes from "GGUF on disk" to "interactive coding session against the fine-tune".
+- The **multi-laptop fleet in [issue #3](https://github.com/alleboudy/codescribe/issues/3)** is the scaling path.
+- The **RAG plan in [issue #4](https://github.com/alleboudy/codescribe/issues/4)** is the inference-time augmentation.
+- The **Python skeletons in [issue #5](https://github.com/alleboudy/codescribe/issues/5)** are the implementer's reference.

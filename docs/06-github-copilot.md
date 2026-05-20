@@ -1,6 +1,6 @@
 # 06 — GitHub Copilot in detail
 
-GitHub Copilot is Microsoft/GitHub's umbrella brand for several distinct AI-assisted coding products. Knowing which one issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2) is targeting (and which Copilot can/cannot do what) matters for the build-off.
+GitHub Copilot is Microsoft/GitHub's umbrella brand for several distinct AI-assisted coding products. Knowing which one issue [#2](https://github.com/alleboudy/codescribe/issues/2) is targeting (and which Copilot can/cannot do what) matters for the build-off.
 
 ## The Copilot product family (as of mid-2026)
 
@@ -14,7 +14,7 @@ GitHub Copilot is Microsoft/GitHub's umbrella brand for several distinct AI-assi
 
 The two that matter for this repo:
 
-1. **Coding Agent** — what you `@copilot`-mention on a GitHub issue. It reads the issue, plans, opens a draft PR, makes commits, responds to review comments. Issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2)'s per-phase issue bodies are designed for this audience.
+1. **Coding Agent** — what you `@copilot`-mention on a GitHub issue. It reads the issue, plans, opens a draft PR, makes commits, responds to review comments. Issue [#2](https://github.com/alleboudy/codescribe/issues/2)'s per-phase issue bodies are designed for this audience.
 2. **Chat (Agent mode)** — the VS Code Copilot Chat panel switched to "Agent" mode, where the model can edit files and run terminal commands across your workspace. Comparable to `claw`/`aider`/`continue.dev` but cloud-hosted.
 
 ## How Copilot Coding Agent works
@@ -37,7 +37,7 @@ Lifecycle of a Copilot-assigned issue:
 
 ### What Copilot reads (the "context files")
 
-Both `.github/copilot-instructions.md` and any `AGENTS.md` files are read on every task. They're how this stack injects the strictly-local rules and per-package anti-patterns. Without them, Copilot would happily import `wandb` or default-bind `0.0.0.0` — both forbidden by the AGENTS.md system in issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2) Phase 0.
+Both `.github/copilot-instructions.md` and any `AGENTS.md` files are read on every task. They're how this stack injects the strictly-local rules and per-package anti-patterns. Without them, Copilot would happily import `wandb` or default-bind `0.0.0.0` — both forbidden by the AGENTS.md system in issue [#2](https://github.com/alleboudy/codescribe/issues/2) Phase 0.
 
 This is the "subagent" pattern in Copilot's world: instead of dynamically spawning subagents per task, you encode each package's rules in its `AGENTS.md` and let Copilot read them on every task in that package. Persistent context without re-pasting.
 
@@ -53,7 +53,7 @@ Different beast:
 
 ### Bring Your Own Key / Bring Your Own Model — the honest status
 
-This is the load-bearing question for whether issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2)'s Phase 5 ("can we use our fine-tuned local model with Copilot Chat?") works:
+This is the load-bearing question for whether issue [#2](https://github.com/alleboudy/codescribe/issues/2)'s Phase 5 ("can we use our fine-tuned local model with Copilot Chat?") works:
 
 | Path | Status as of 2026-05 | Reality |
 |---|---|---|
@@ -64,7 +64,7 @@ This is the load-bearing question for whether issue [#2](https://github.com/alle
 | GitHub Models API → custom local model | Not supported | The GitHub Models API is for *hosted* models on GitHub's infra. |
 | `/etc/hosts` redirect of `api.githubcopilot.com` to a localhost proxy | Unsupported, brittle | Possible but breaks every Copilot update. |
 
-**Practical recommendation**: don't bet the project on Copilot Chat consuming your local model. Issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2) explicitly drops "Copilot as harness" as an architectural premise. Use Copilot Coding Agent to *build the stack* (it works fine — it doesn't need to consume your fine-tuned model); then drive the fine-tuned model via `claw`/`aider`/`continue.dev`.
+**Practical recommendation**: don't bet the project on Copilot Chat consuming your local model. Issue [#2](https://github.com/alleboudy/codescribe/issues/2) explicitly drops "Copilot as harness" as an architectural premise. Use Copilot Coding Agent to *build the stack* (it works fine — it doesn't need to consume your fine-tuned model); then drive the fine-tuned model via `claw`/`aider`/`continue.dev`.
 
 ## Cloud-coupling implications
 
@@ -76,7 +76,7 @@ This means:
 - If your codebase is under NDA, **Copilot Chat is not strictly-local**, regardless of what model produces the final completion.
 - For strictly-local work, use a local harness (`claw`, `aider`, `continue.dev`) where both the agent loop AND the model run on your machine.
 
-This is exactly the contradiction issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2)'s Phase 5 calls out and why "Copilot as harness" was dropped.
+This is exactly the contradiction issue [#2](https://github.com/alleboudy/codescribe/issues/2)'s Phase 5 calls out and why "Copilot as harness" was dropped.
 
 ## When Copilot Coding Agent is the right tool
 
@@ -88,11 +88,11 @@ Use it when:
 - You don't need the implementer to use a *specific* model — Copilot picks from its own catalogue.
 - The codebase is **either public, or your org's Copilot policy permits private-repo agent work**.
 
-Issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2) is built around this pattern: 5 well-scoped phase issues, CI-enforced acceptance, dense AGENTS.md files. File each phase as an `@copilot`-assigned issue, wait for the PR, review, merge, move on.
+Issue [#2](https://github.com/alleboudy/codescribe/issues/2) is built around this pattern: 5 well-scoped phase issues, CI-enforced acceptance, dense AGENTS.md files. File each phase as an `@copilot`-assigned issue, wait for the PR, review, merge, move on.
 
 ## When Copilot Coding Agent is the wrong tool
 
-- The work needs **specific local hardware** (training on YOUR GPU, not Copilot's sandbox). Issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2) handles this by marking GPU steps as "operator-verified post-merge" — Copilot ships the code; you run the training.
+- The work needs **specific local hardware** (training on YOUR GPU, not Copilot's sandbox). Issue [#2](https://github.com/alleboudy/codescribe/issues/2) handles this by marking GPU steps as "operator-verified post-merge" — Copilot ships the code; you run the training.
 - The work is **deeply cross-cutting** (touches >5 packages in one PR). Copilot does worse with sprawl.
 - The work needs **secrets or credentials** the sandbox doesn't have. (Copilot's sandbox CAN be configured with org-level secrets, but it's a deliberate setup.)
 
@@ -101,7 +101,7 @@ Issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2) is built around 
 Repository-level Copilot settings let you:
 
 - **Allowlist outbound network destinations.** For this stack, you need `huggingface.co`, `pypi.org`, `github.com` (for `gh` CLI auth + releases), `nvidia.com` (CUDA repo). Configure under the repo's "Settings → Copilot → Agents → Allowed network destinations".
-- **Inject env vars / secrets.** For things like `GH_TOKEN` for the GitHub source client (issue [#4](https://github.com/alleboudy/llm-finetuner/issues/4) §8) or a Bugzilla API key fixture.
+- **Inject env vars / secrets.** For things like `GH_TOKEN` for the GitHub source client (issue [#4](https://github.com/alleboudy/codescribe/issues/4) §8) or a Bugzilla API key fixture.
 - **Set time budget.** Long tasks can be capped.
 
 Without proper allowlist configuration, the very first phase that touches HuggingFace Hub will fail in the Copilot sandbox.
@@ -117,7 +117,7 @@ Without proper allowlist configuration, the very first phase that touches Huggin
 5. **Surface conflict-resolution policy.** "If a hard rule conflicts with this issue, surface in the PR description; do not silently pick." Copilot will often silently pick when given the chance.
 6. **Cite history for non-obvious rules.** Saying "no `device_map='auto'`" is less effective than saying "no `device_map='auto'` — closed issue #3 in this repo's history details the KeyError chain it triggers".
 
-Issue [#2 §16](https://github.com/alleboudy/llm-finetuner/issues/2) (scoring criteria) measures exactly these dimensions.
+Issue [#2 §16](https://github.com/alleboudy/codescribe/issues/2) (scoring criteria) measures exactly these dimensions.
 
 ## What Copilot is good at vs not good at
 
@@ -134,7 +134,7 @@ Issue [#2 §16](https://github.com/alleboudy/llm-finetuner/issues/2) (scoring cr
 - "Just do whatever makes sense" — ambiguity is poison.
 - Things that need real hardware (it can't run your GPU).
 
-Issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2)'s phase structure is designed around these strengths: each phase is one package, with explicit deliverables and CI-enforced acceptance.
+Issue [#2](https://github.com/alleboudy/codescribe/issues/2)'s phase structure is designed around these strengths: each phase is one package, with explicit deliverables and CI-enforced acceptance.
 
 ## Further reading
 
