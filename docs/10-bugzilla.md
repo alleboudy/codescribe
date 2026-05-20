@@ -1,6 +1,6 @@
 # 10 — Bugzilla primer
 
-If your bug tracker is Bugzilla, here's what you need to know to make sense of the RAG source-client code in [issue #5 §2](https://github.com/alleboudy/llm-finetuner/issues/5).
+If your bug tracker is Bugzilla, here's what you need to know to make sense of the RAG source-client code in [issue #5 §2](https://github.com/alleboudy/codescribe/issues/5).
 
 ## What Bugzilla is
 
@@ -50,7 +50,7 @@ Bugs can have attachments — patches, logs, screenshots, test files. Each has:
 
 - `id`, `file_name`, `content_type`, `creation_time`, `creator`, `is_patch`, `is_obsolete`.
 
-For RAG, attachments labelled `is_patch=true` are sometimes useful — they're often the literal fix diff. But the RAG plan in [issue #4](https://github.com/alleboudy/llm-finetuner/issues/4) focuses on linked Perforce CLs / Git PRs rather than Bugzilla attachments; attachments are scope-creep for v1.
+For RAG, attachments labelled `is_patch=true` are sometimes useful — they're often the literal fix diff. But the RAG plan in [issue #4](https://github.com/alleboudy/codescribe/issues/4) focuses on linked Perforce CLs / Git PRs rather than Bugzilla attachments; attachments are scope-creep for v1.
 
 ### History
 
@@ -148,7 +148,7 @@ Comment 0 (count=0) is the description.
 GET /rest/bug/12345/history
 ```
 
-Returns the audit log of field changes. Useful for the temporal-pairing heuristic in [issue #4 §9](https://github.com/alleboudy/llm-finetuner/issues/4) — "when did the bug transition to FIXED?".
+Returns the audit log of field changes. Useful for the temporal-pairing heuristic in [issue #4 §9](https://github.com/alleboudy/codescribe/issues/4) — "when did the bug transition to FIXED?".
 
 #### Attachments
 
@@ -160,7 +160,7 @@ Returns attachment metadata. The actual binary content is at `/rest/bug/attachme
 
 ## Rate limiting
 
-Bugzilla's API has no formal rate limit but **will get sluggish or refuse connections at >100 req/s**. The RAG indexer respects a token bucket capped at 5 rps by default ([issue #5 §3](https://github.com/alleboudy/llm-finetuner/issues/5)).
+Bugzilla's API has no formal rate limit but **will get sluggish or refuse connections at >100 req/s**. The RAG indexer respects a token bucket capped at 5 rps by default ([issue #5 §3](https://github.com/alleboudy/codescribe/issues/5)).
 
 For initial bootstrap (~50K bugs, ~3 requests per bug for full detail with comments) at 5 rps that's ~30K seconds = ~8 hours. Tolerable for a one-time bootstrap. Subsequent incremental sync touches only deltas.
 
@@ -185,7 +185,7 @@ ts = datetime.fromisoformat(s.rstrip("Z")).replace(tzinfo=timezone.utc)
 watermark = last_seen - timedelta(seconds=1)
 ```
 
-Documented in [issue #5 §2](https://github.com/alleboudy/llm-finetuner/issues/5).
+Documented in [issue #5 §2](https://github.com/alleboudy/codescribe/issues/5).
 
 ## Authentication caveats
 
@@ -204,7 +204,7 @@ Bugzilla has been around for 25+ years. Versions you might encounter:
 | 4.4+ | Mature REST API |
 | 5.x (current as of 2026) | REST is primary; XML-RPC still works |
 
-We use REST. **Do not use XML-RPC** — it's deprecated, less performant, and harder to parse. [Issue #5 §2 AGENTS.md anti-patterns](https://github.com/alleboudy/llm-finetuner/issues/5) bans it.
+We use REST. **Do not use XML-RPC** — it's deprecated, less performant, and harder to parse. [Issue #5 §2 AGENTS.md anti-patterns](https://github.com/alleboudy/codescribe/issues/5) bans it.
 
 ## Comparison to other bug trackers
 
@@ -223,7 +223,7 @@ For RAG purposes, the key differentiator is **how strongly the bug-to-fix link i
 - **JIRA** is decent — Smart Commits / branch naming conventions give explicit links.
 - **Bugzilla** is hardest — links are mostly free-text comments ("Fixed in CL 12345"); you need regex extraction + heuristics.
 
-This is exactly why [issue #4 §9](https://github.com/alleboudy/llm-finetuner/issues/4)'s pairing module is more elaborate for Perforce+Bugzilla than the simpler git+GitHub equivalent.
+This is exactly why [issue #4 §9](https://github.com/alleboudy/codescribe/issues/4)'s pairing module is more elaborate for Perforce+Bugzilla than the simpler git+GitHub equivalent.
 
 ## Common pitfalls
 

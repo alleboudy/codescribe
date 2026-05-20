@@ -38,7 +38,7 @@ Other reasons RAG beats fine-tuning for specific cases:
 - **Highly synthesised reasoning**: if the answer requires inferring patterns *across* many documents, retrieval gives you piecemeal context the model has to stitch — usually worse than a fine-tune that has the pattern baked in.
 - **Latency-sensitive use cases**: each retrieval adds ~100 ms; in a fast-typing IDE completion loop this matters.
 
-Always **measure RAG lift** (see [issue #4 §15](https://github.com/alleboudy/llm-finetuner/issues/4)) before turning it on by default. If lift is <5 percentage points on `task_mean`, leave RAG opt-in.
+Always **measure RAG lift** (see [issue #4 §15](https://github.com/alleboudy/codescribe/issues/4)) before turning it on by default. If lift is <5 percentage points on `task_mean`, leave RAG opt-in.
 
 ## The components of a RAG system
 
@@ -132,7 +132,7 @@ Real vector stores use approximate-nearest-neighbour (ANN) algorithms (HNSW, IVF
 
 For our use case (≤500K documents on one host) sqlite-vec is the right choice. Everything lives in ONE `.db` file. Backup is `cp`. No daemon. No port management. The same DB also holds the BM25 sidecar (via FTS5), so hybrid retrieval is one process.
 
-The only caveat: sqlite-vec's `vec0` virtual tables don't support JOINs with regular tables, which means we look up metadata in Python after retrieving rowids. Not a big deal in practice; documented in [issue #5 §4](https://github.com/alleboudy/llm-finetuner/issues/5).
+The only caveat: sqlite-vec's `vec0` virtual tables don't support JOINs with regular tables, which means we look up metadata in Python after retrieving rowids. Not a big deal in practice; documented in [issue #5 §4](https://github.com/alleboudy/codescribe/issues/5).
 
 ### Other options briefly
 
@@ -193,7 +193,7 @@ Common chunking strategies:
 | **Per-hunk** (split unified diffs at `@@ ... @@`) | What we use for PR diffs in the RAG plan |
 | **Semantic chunking** (split where embedding distance jumps) | Experimental; expensive |
 
-For this stack, we use per-hunk for diffs and (title+description+first-N-comments) for bugs. Documented in [issue #5 §7](https://github.com/alleboudy/llm-finetuner/issues/5).
+For this stack, we use per-hunk for diffs and (title+description+first-N-comments) for bugs. Documented in [issue #5 §7](https://github.com/alleboudy/codescribe/issues/5).
 
 ## The pairing problem (the hard part of our RAG)
 
@@ -206,7 +206,7 @@ Linking bugs to fixes is messy:
 - Some bugs and CLs have no explicit cross-reference, but the CL was submitted shortly after the bug closed by the bug's assignee.
 - Some bugs reference multiple CLs (one initial attempt, a follow-up fix, etc.).
 
-The RAG plan in [issue #4 §9](https://github.com/alleboudy/llm-finetuner/issues/4) defines a confidence-scoring scheme that aggregates these signals. Default strict threshold: 0.8 — typically requires explicit cross-reference. Below that, retrieval might surface unrelated CLs.
+The RAG plan in [issue #4 §9](https://github.com/alleboudy/codescribe/issues/4) defines a confidence-scoring scheme that aggregates these signals. Default strict threshold: 0.8 — typically requires explicit cross-reference. Below that, retrieval might surface unrelated CLs.
 
 For GitHub-based stacks the pairing problem mostly disappears — GitHub's GraphQL API exposes `closingIssuesReferences` directly. For Perforce + Bugzilla you need the heuristics.
 
@@ -218,7 +218,7 @@ A 5-year-old CL in a since-refactored area can mislead the model. Strategies to 
 - **Soft decay**: multiply the retrieval score by `exp(-age_years / 3)` so older docs are penalised but not removed.
 - **Re-rank with a recency feature**: post-retrieve, sort by a weighted combination of score and recency.
 
-We document this as an open question in [issue #4 §17](https://github.com/alleboudy/llm-finetuner/issues/4). For v1, no recency weighting; measure first, tune second.
+We document this as an open question in [issue #4 §17](https://github.com/alleboudy/codescribe/issues/4). For v1, no recency weighting; measure first, tune second.
 
 ## Latency budget
 
@@ -246,7 +246,7 @@ Before turning RAG on by default, measure it. The lift measurement:
 3. Score both via `expected_token_substrings` / `forbidden_token_substrings` (same scorer as the fine-tune eval).
 4. Compute `lift = mean(with_rag_score) - mean(baseline_score)`.
 
-Threshold for default-on: lift ≥ 0.05 (5 percentage points on a 0..1 scale). Below that, leave RAG opt-in via the harness's MCP config. See [issue #4 §15](https://github.com/alleboudy/llm-finetuner/issues/4).
+Threshold for default-on: lift ≥ 0.05 (5 percentage points on a 0..1 scale). Below that, leave RAG opt-in via the harness's MCP config. See [issue #4 §15](https://github.com/alleboudy/codescribe/issues/4).
 
 ## Further reading
 

@@ -212,14 +212,14 @@ Then test with the MCP Inspector (see below).
 
 ## Critical: stdout is the JSON-RPC channel
 
-The most common bug in MCP servers: a stray `print(...)` somewhere in your code corrupts the stdout stream. The client sees a JSON parse error and the server appears to be silently broken. **Configure logging to write to a file ONLY**, before any other code runs. From issue [#4](https://github.com/alleboudy/llm-finetuner/issues/4) §13.5's `rag_server/AGENTS.md`:
+The most common bug in MCP servers: a stray `print(...)` somewhere in your code corrupts the stdout stream. The client sees a JSON parse error and the server appears to be silently broken. **Configure logging to write to a file ONLY**, before any other code runs. From issue [#4](https://github.com/alleboudy/codescribe/issues/4) §13.5's `rag_server/AGENTS.md`:
 
 > stdout is the JSON-RPC channel. Nothing else goes there. Ever.
 > - `logger` is configured to write ONLY to a file.
 > - `sys.stdout` is reserved for the MCP SDK; do not `print(...)` anywhere in the package.
 > - Static check `test_no_stdout.py` greps for `print(` outside `__main__.py` guards.
 
-Even worse: some libraries (transformers, certain numpy paths) install a `StreamHandler` on the root logger at import time. If your MCP server imports them after configuring its own logger, the StreamHandler can sneak in and start writing to stdout. The fix is to **explicitly remove all handlers from the root logger and install a FileHandler at the very top of your `__main__.py`**, before any other imports. See [issue #5](https://github.com/alleboudy/llm-finetuner/issues/5) §8 for the exact code.
+Even worse: some libraries (transformers, certain numpy paths) install a `StreamHandler` on the root logger at import time. If your MCP server imports them after configuring its own logger, the StreamHandler can sneak in and start writing to stdout. The fix is to **explicitly remove all handlers from the root logger and install a FileHandler at the very top of your `__main__.py`**, before any other imports. See [issue #5](https://github.com/alleboudy/codescribe/issues/5) §8 for the exact code.
 
 ## Testing MCP servers
 
@@ -254,7 +254,7 @@ async def test_call_tool():
         assert "You said: hi" in result.content[0].text
 ```
 
-Fast; no subprocess; useful for CI. See [issue #5](https://github.com/alleboudy/llm-finetuner/issues/5) §11 for fixture patterns.
+Fast; no subprocess; useful for CI. See [issue #5](https://github.com/alleboudy/codescribe/issues/5) §11 for fixture patterns.
 
 ## Wiring an MCP server into a harness
 
@@ -326,7 +326,7 @@ For this stack's RAG MCP server, all tools are **read-only**: `find_similar_bugs
 A few existing MCP servers you can learn from or directly use:
 
 - **`@modelcontextprotocol/server-filesystem`** — Expose a directory as a read-only resource set.
-- **`@modelcontextprotocol/server-github`** — GitHub API (issues, PRs, search) as tools. (Useful for issue [#4](https://github.com/alleboudy/llm-finetuner/issues/4)'s concrete-project sibling case if you go that route.)
+- **`@modelcontextprotocol/server-github`** — GitHub API (issues, PRs, search) as tools. (Useful for issue [#4](https://github.com/alleboudy/codescribe/issues/4)'s concrete-project sibling case if you go that route.)
 - **`@modelcontextprotocol/server-postgres`** — Read-only SQL access to Postgres.
 - **`@modelcontextprotocol/server-puppeteer`** — Browser automation tools.
 - Community: a growing list at https://github.com/modelcontextprotocol/servers
@@ -339,5 +339,5 @@ A few existing MCP servers you can learn from or directly use:
 - MCP Inspector: https://github.com/modelcontextprotocol/inspector
 - Community server list: https://github.com/modelcontextprotocol/servers
 - Anthropic's launch announcement: https://www.anthropic.com/news/model-context-protocol
-- Issue [#4 §13](https://github.com/alleboudy/llm-finetuner/issues/4) of this repo has the deep dive applied to our RAG use case.
-- Issue [#5 §8](https://github.com/alleboudy/llm-finetuner/issues/5) has the concrete Python skeleton with the logger-isolation pattern.
+- Issue [#4 §13](https://github.com/alleboudy/codescribe/issues/4) of this repo has the deep dive applied to our RAG use case.
+- Issue [#5 §8](https://github.com/alleboudy/codescribe/issues/5) has the concrete Python skeleton with the logger-isolation pattern.

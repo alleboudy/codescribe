@@ -55,7 +55,7 @@ That leaves ~1.2 GB headroom on an 8 GB GPU — tight but workable. Doubling `se
 - **30–50% less VRAM** for the same hyperparameters (so you can train at `seq_len=2048` on a 12 GB card where vanilla `Trainer` OOMs).
 - **Simpler API** for the QLoRA pattern: `unsloth.FastLanguageModel.from_pretrained(...)` + `get_peft_model(...)` and you're done.
 
-The trade-off: Unsloth's optimisations sometimes conflict with multi-GPU DDP wrapping (see issue [#3](https://github.com/alleboudy/llm-finetuner/issues/3) §6.4 — "The Unsloth-vs-DDP tension"). For single-GPU training, Unsloth is uniformly better; for multi-node distributed, you may need to fall back to vanilla `Trainer + accelerate`.
+The trade-off: Unsloth's optimisations sometimes conflict with multi-GPU DDP wrapping (see issue [#3](https://github.com/alleboudy/codescribe/issues/3) §6.4 — "The Unsloth-vs-DDP tension"). For single-GPU training, Unsloth is uniformly better; for multi-node distributed, you may need to fall back to vanilla `Trainer + accelerate`.
 
 ## The optimizer story: `paged_adamw_8bit`
 
@@ -170,7 +170,7 @@ log:
 
 Notes:
 - Effective batch size = `batch_size × grad_accum_steps` = 16. Larger reduces gradient noise; we're at 16 because `batch_size=1` is the only thing that fits and `grad_accum_steps` is essentially free.
-- `lr=2e-4` is the QLoRA reference value. Tune via the sweep tooling in issue [#3](https://github.com/alleboudy/llm-finetuner/issues/3) (Path A).
+- `lr=2e-4` is the QLoRA reference value. Tune via the sweep tooling in issue [#3](https://github.com/alleboudy/codescribe/issues/3) (Path A).
 - `warmup_steps=5` is short because LoRA adapters initialise close to zero — they don't need a long warmup.
 - `scheduler: cosine` decays the LR from peak to ~0 over the run. Stable; the alternative `linear` is fine too.
 

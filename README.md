@@ -1,4 +1,4 @@
-# llm-finetuner
+# codescribe
 
 Recipes and reference code for building a **strictly-local fine-tune-on-codebase stack**: take a private codebase, fine-tune a 7B-class open-weights model on it, serve the result locally via an OpenAI-compatible HTTP endpoint, and (optionally) plug it into any modern coding harness with retrieval-augmented context from your bug tracker and version-control history.
 
@@ -35,11 +35,11 @@ You do **not** want:
 
 | # | Title | What it gives you |
 |---|---|---|
-| [#1](https://github.com/alleboudy/llm-finetuner/issues/1) | Runbook: serve the fine-tuned GGUF and drive it with `claw` | The operator runbook. Spin up `llama-server`, tunnel from a remote box, run a smoke test, drive the model with `claw`. |
-| [#2](https://github.com/alleboudy/llm-finetuner/issues/2) | Meta-plan: fine-tune-on-codebase stack via GitHub Copilot subagents | The build-off plan. Five per-phase issue bodies you file as GitHub issues and assign to Copilot (or an intern). Includes a 9-dimensional scoring rubric for comparing implementations. |
-| [#3](https://github.com/alleboudy/llm-finetuner/issues/3) | Fleet guide: parallel & distributed QLoRA across N workstation laptops | How to scale beyond one machine. Two paths: parallel HP sweep (recommended) and distributed data-parallel training (rarely worth it on 1 Gbps LAN). the OEM-specific power/thermal config. |
-| [#4](https://github.com/alleboudy/llm-finetuner/issues/4) | RAG plan: bugs+fixes from Perforce/Bugzilla as MCP-served context | How to add inference-time retrieval over your bug-tracker and VCS history. Six per-package phases. Deep MCP primer. Strict-by-default bug↔CL pairing. |
-| [#5](https://github.com/alleboudy/llm-finetuner/issues/5) | Reference Python skeletons for all RAG-stack tooling | Annotated near-runnable templates for every script: Perforce client, Bugzilla REST client, sqlite-vec store, embedder, hybrid retriever, MCP server, llama-server handle, test fixtures. |
+| [#1](https://github.com/alleboudy/codescribe/issues/1) | Runbook: serve the fine-tuned GGUF and drive it with `claw` | The operator runbook. Spin up `llama-server`, tunnel from a remote box, run a smoke test, drive the model with `claw`. |
+| [#2](https://github.com/alleboudy/codescribe/issues/2) | Meta-plan: fine-tune-on-codebase stack via GitHub Copilot subagents | The build-off plan. Five per-phase issue bodies you file as GitHub issues and assign to Copilot (or an intern). Includes a 9-dimensional scoring rubric for comparing implementations. |
+| [#3](https://github.com/alleboudy/codescribe/issues/3) | Fleet guide: parallel & distributed QLoRA across N workstation laptops | How to scale beyond one machine. Two paths: parallel HP sweep (recommended) and distributed data-parallel training (rarely worth it on 1 Gbps LAN). the OEM-specific power/thermal config. |
+| [#4](https://github.com/alleboudy/codescribe/issues/4) | RAG plan: bugs+fixes from Perforce/Bugzilla as MCP-served context | How to add inference-time retrieval over your bug-tracker and VCS history. Six per-package phases. Deep MCP primer. Strict-by-default bug↔CL pairing. |
+| [#5](https://github.com/alleboudy/codescribe/issues/5) | Reference Python skeletons for all RAG-stack tooling | Annotated near-runnable templates for every script: Perforce client, Bugzilla REST client, sqlite-vec store, embedder, hybrid retriever, MCP server, llama-server handle, test fixtures. |
 
 ### Documentation (`docs/`)
 
@@ -71,19 +71,19 @@ Read in this order:
 
 1. [`docs/01-overview.md`](docs/01-overview.md) — what the stack does end-to-end.
 2. [`docs/11-hardware.md`](docs/11-hardware.md) — confirm your hardware can do this.
-3. [Issue #2](https://github.com/alleboudy/llm-finetuner/issues/2) — the build-off plan; how the phases decompose.
+3. [Issue #2](https://github.com/alleboudy/codescribe/issues/2) — the build-off plan; how the phases decompose.
 4. The doc for each phase as you reach it (e.g., [`02-fine-tuning.md`](docs/02-fine-tuning.md) before Phase 2, [`04-inference.md`](docs/04-inference.md) before Phase 3, etc.).
-5. [Issue #5](https://github.com/alleboudy/llm-finetuner/issues/5) when you need the concrete Python skeleton for the file you're about to write.
-6. [Issue #1](https://github.com/alleboudy/llm-finetuner/issues/1) when the GGUF is ready and you want to drive it.
-7. [Issue #4](https://github.com/alleboudy/llm-finetuner/issues/4) for RAG once the basic stack works.
-8. [Issue #3](https://github.com/alleboudy/llm-finetuner/issues/3) only if you outgrow a single machine.
+5. [Issue #5](https://github.com/alleboudy/codescribe/issues/5) when you need the concrete Python skeleton for the file you're about to write.
+6. [Issue #1](https://github.com/alleboudy/codescribe/issues/1) when the GGUF is ready and you want to drive it.
+7. [Issue #4](https://github.com/alleboudy/codescribe/issues/4) for RAG once the basic stack works.
+8. [Issue #3](https://github.com/alleboudy/codescribe/issues/3) only if you outgrow a single machine.
 
 ### Path B — "I'm reviewing or auditing"
 
 Read in this order:
 
 1. [`docs/01-overview.md`](docs/01-overview.md) — the design rationale.
-2. The "honest caveats" sections in [issue #2](https://github.com/alleboudy/llm-finetuner/issues/2), [#3](https://github.com/alleboudy/llm-finetuner/issues/3), [#4](https://github.com/alleboudy/llm-finetuner/issues/4) — what we're explicit about *not* doing.
+2. The "honest caveats" sections in [issue #2](https://github.com/alleboudy/codescribe/issues/2), [#3](https://github.com/alleboudy/codescribe/issues/3), [#4](https://github.com/alleboudy/codescribe/issues/4) — what we're explicit about *not* doing.
 3. The scoring rubrics (§16 of #2; §15 of #4) — how to measure whether an implementation is any good.
 4. [`docs/07-mcp.md`](docs/07-mcp.md) and [`docs/08-rag.md`](docs/08-rag.md) for the layer that's most novel.
 
@@ -91,7 +91,7 @@ Read in this order:
 
 ## The non-negotiable constraints
 
-These cut across every phase. They're encoded as static tests in [issue #2 §16](https://github.com/alleboudy/llm-finetuner/issues/2) and [issue #4 §15](https://github.com/alleboudy/llm-finetuner/issues/4)'s scoring rubrics, so violations show up in CI:
+These cut across every phase. They're encoded as static tests in [issue #2 §16](https://github.com/alleboudy/codescribe/issues/2) and [issue #4 §15](https://github.com/alleboudy/codescribe/issues/4)'s scoring rubrics, so violations show up in CI:
 
 - **No cloud anything.** No remote embedding APIs, no hosted vector stores, no cloud GPUs. Outbound HTTP is allowlisted to HuggingFace Hub (downloads), PyPI (`uv sync`), GitHub releases (llama.cpp), and your internal Perforce + Bugzilla servers — nothing else.
 - **No telemetry.** No `wandb`, no Sentry, no `huggingface-cli upload`. Logs go to stdout/stderr/files; never to a remote sink.
@@ -106,7 +106,7 @@ These aren't preferences. They're how we know the stack actually stays local.
 
 ## Implementer (intern or Copilot) expectations
 
-Per issue [#2](https://github.com/alleboudy/llm-finetuner/issues/2) — this repo doubles as the spec for an **intern vs. GitHub Copilot Coding Agent build-off**. Each phase is filed as its own GitHub issue and assigned to `@copilot`; the intern path runs in parallel. The scoring rubric in [#2 §16](https://github.com/alleboudy/llm-finetuner/issues/2) measures:
+Per issue [#2](https://github.com/alleboudy/codescribe/issues/2) — this repo doubles as the spec for an **intern vs. GitHub Copilot Coding Agent build-off**. Each phase is filed as its own GitHub issue and assigned to `@copilot`; the intern path runs in parallel. The scoring rubric in [#2 §16](https://github.com/alleboudy/codescribe/issues/2) measures:
 
 - CI green on first push (per phase).
 - Anti-pattern intro count (target: zero of each banned pattern).
@@ -137,7 +137,7 @@ The fine-tuned model you produce is your own — your codebase, your weights, yo
 
 ### Attribution appreciated (but not legally required)
 
-If you build a fine-tuned model, RAG system, or MCP server based on these recipes, a `based on llm-finetuner by Ahmad Alleboudy` credit in your README, model card, or release notes is appreciated. It's not enforceable through any standard licence — copyright doesn't cover techniques and ideas, only the files themselves — but it helps the project (and the author) see what people are building.
+If you build a fine-tuned model, RAG system, or MCP server based on these recipes, a `based on codescribe by Ahmad Alleboudy` credit in your README, model card, or release notes is appreciated. It's not enforceable through any standard licence — copyright doesn't cover techniques and ideas, only the files themselves — but it helps the project (and the author) see what people are building.
 
 ---
 

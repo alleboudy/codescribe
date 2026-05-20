@@ -1,6 +1,6 @@
 # 09 — Perforce primer
 
-If your codebase lives in Perforce (Helix Core), here's what you need to know to make sense of the RAG source-client code in [issue #5 §1](https://github.com/alleboudy/llm-finetuner/issues/5).
+If your codebase lives in Perforce (Helix Core), here's what you need to know to make sense of the RAG source-client code in [issue #5 §1](https://github.com/alleboudy/codescribe/issues/5).
 
 ## What Perforce is and why some teams still use it
 
@@ -105,7 +105,7 @@ $ p4 changes -s submitted //depot/main/...@12346,#head
 $ p4 -G changes -s submitted -m 5 //depot/main/...
 ```
 
-The `-G` flag emits Python `marshal` binary format (one dict per record). The RAG client uses this in [issue #5 §1](https://github.com/alleboudy/llm-finetuner/issues/5).
+The `-G` flag emits Python `marshal` binary format (one dict per record). The RAG client uses this in [issue #5 §1](https://github.com/alleboudy/codescribe/issues/5).
 
 ### `p4 describe`
 
@@ -173,7 +173,7 @@ ts = datetime.fromtimestamp(int(meta["time"]), tz=timezone.utc)
 
 ## Common pitfalls
 
-- **`p4 describe -du` truncates large diffs.** Diffs larger than ~1 MB are cut off with a `... truncated` marker. Capture this signal; downstream chunkers must handle truncated diffs. (See [issue #5 §1](https://github.com/alleboudy/llm-finetuner/issues/5).)
+- **`p4 describe -du` truncates large diffs.** Diffs larger than ~1 MB are cut off with a `... truncated` marker. Capture this signal; downstream chunkers must handle truncated diffs. (See [issue #5 §1](https://github.com/alleboudy/codescribe/issues/5).)
 - **`P4CLIENT` is required for some commands, optional for others.** `p4 changes` against an explicit depot path works without a client; some other commands fail without one. Document your setup.
 - **Tickets expire mid-run.** A long-running indexer that takes >12 hours will hit `P4-AUTH` errors. Wrap subprocess calls with a clear error message — never store the password.
 - **`p4 sync` is fast but disk-intensive**; don't accidentally sync the whole depot from the RAG indexer.
@@ -187,7 +187,7 @@ Apart from password auth there's also:
 - **Auth ticket**: long-lived for headless/CI use. Generated via `p4 login -p` (prints the ticket value); store in `~/.p4tickets`.
 - **OAuth tickets** (rare; some custom setups).
 
-For the RAG indexer's purposes, all of these end up as a ticket in `~/.p4tickets`. The client just sets `P4TICKETS` env var and the subprocess uses it. Documented in [issue #5 §1](https://github.com/alleboudy/llm-finetuner/issues/5)'s `_subprocess_env()` helper.
+For the RAG indexer's purposes, all of these end up as a ticket in `~/.p4tickets`. The client just sets `P4TICKETS` env var and the subprocess uses it. Documented in [issue #5 §1](https://github.com/alleboudy/codescribe/issues/5)'s `_subprocess_env()` helper.
 
 ## Triggers (post-submit hooks)
 
@@ -196,7 +196,7 @@ Perforce supports server-side triggers that fire on submit, login, etc. The RAG 
 1. Set up a `change-commit` trigger that hits an HTTP endpoint after each submit.
 2. Have the endpoint enqueue a "refresh CL N" job that runs in the background.
 
-This is documented as an open question in [issue #4 §19](https://github.com/alleboudy/llm-finetuner/issues/4).
+This is documented as an open question in [issue #4 §19](https://github.com/alleboudy/codescribe/issues/4).
 
 ## Things Git users miss
 
