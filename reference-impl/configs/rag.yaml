@@ -1,0 +1,42 @@
+perforce:
+  p4port: "ssl:perforce.corp.example.com:1666"
+  p4user: "svc-rag"
+  ticket_path: "~/.p4tickets"
+  depot_path: "//depot/main/..."
+  binary: "p4"
+  subprocess_timeout_s: 60.0
+bugzilla:
+  base_url: "https://bugzilla.corp.example.com"
+  allowlist_hostname: "bugzilla.corp.example.com"   # asserted at client construction
+  api_key_path: "~/.config/codescribe_rag/bugzilla.key"  # mode-600 enforced
+  page_size: 100
+  request_timeout_s: 30.0
+  connect_timeout_s: 5.0
+store:
+  db_path: "indices/rag.db"
+embed:
+  backend: "sentence-transformers"        # | "hashing"
+  model_path: "~/.hf-models/bge-large-en-v1.5"
+  device: "auto"
+  batch_size: 32
+  max_length: 512
+  dim: 1024
+pairing:
+  weights:
+    bug_comment_cites_cl: 0.5
+    cl_desc_cites_bug: 0.5
+    temporal_proximity: 0.3
+    assignee_author_match: 0.2
+    bug_status_fixed: 0.1
+  threshold: 0.8
+  temporal_signal_days: 7                 # CL within N days of bug resolution -> temporal signal
+  candidate_window_days: 60               # only score bug x CL pairs within this window
+  min_bug_id: 1000
+  min_cl_id: 1000
+retrieve:
+  k: 5
+  k_vec: 20
+  k_bm25: 20
+  confidence_threshold: 0.8
+  rrf_constant: 60
+rate_limit_rps: 5.0
