@@ -1,0 +1,37 @@
+[project]
+name = "codescribe-rag"
+version = "0.1.0"
+description = "RAG-only Perforce+Bugzilla MCP server for Copilot Chat (codescribe issue #6)"
+requires-python = ">=3.12"
+dependencies = [
+  "httpx>=0.27",
+  "pydantic>=2.6",
+  "tenacity>=8.0",
+  "pyyaml>=6.0",
+  "python-dateutil>=2.9",
+  "pathspec>=0.12",
+  "numpy<2.0",
+]
+
+[project.optional-dependencies]
+# Vector store extension (small wheel). Needed to run the store/retrieve tests.
+rag = ["sqlite-vec>=0.1.6"]
+# Production embedder. Heavy (pulls torch); NOT needed for the test suite, which
+# uses the numpy-only HashingEmbedder. Install only on the indexing host.
+embed = ["sentence-transformers>=3.0"]
+# MCP server SDK. Needed to run the rag_server tests.
+mcp = ["mcp>=1.0,<2.0"]
+dev = ["pytest>=8.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["codescribe_rag"]
+
+[tool.pytest.ini_options]
+markers = [
+  "slow: long-running (latency/perf) tests; run with -m slow",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
