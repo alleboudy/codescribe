@@ -1,0 +1,18 @@
+{
+  "_comment": "Canonical MCP server config (single source of truth). Copy the 'codescribe-rag' block into your harness's mcpServers map (see docs/SETUP-COPILOT.md). Replace the absolute paths with your checkout location.",
+  "mcpServers": {
+    "codescribe-rag": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory", "/Users/r0gu3/repos/codescribe/reference-impl",
+        "python", "-m", "codescribe_rag.servers.rag_server"
+      ],
+      "env": {
+        "RAG_DB_PATH": "/Users/r0gu3/repos/codescribe/reference-impl/indices/rag.db",
+        "RAG_LOG_PATH": "/Users/r0gu3/repos/codescribe/reference-impl/logs/rag-server.log",
+        "RAG_CONFIG": "/Users/r0gu3/repos/codescribe/reference-impl/configs/rag.yaml"
+      }
+    }
+  }
+}
