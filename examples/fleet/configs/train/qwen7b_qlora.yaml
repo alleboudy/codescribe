@@ -1,0 +1,29 @@
+# Canonical single-host QLoRA config (codescribe docs/02-fine-tuning.md §config).
+# The sweep overrides individual dotted keys from this base (see sweeps/*.yaml).
+# The fleet orchestrator never edits this file; it renders a per-job copy with the
+# grid overrides + a per-job seed applied on top.
+base_model: Qwen/Qwen2.5-Coder-7B-Instruct
+seq_len: 1024              # hard rule: 2048 OOMs an 8 GB card at 7B QLoRA
+lora:
+  r: 16
+  alpha: 16
+  dropout: 0.0
+  target: all-linear
+optim:
+  name: paged_adamw_8bit   # hard rule: adamw_torch OOMs on 8 GB
+  lr: 2.0e-4
+  warmup_steps: 5
+  scheduler: cosine
+train:
+  epochs: 3
+  batch_size: 1
+  grad_accum_steps: 16     # effective batch size = 1 * 16 = 16
+  max_grad_norm: 1.0
+save:
+  steps: 200
+  total_limit: 2
+log:
+  steps: 10
+# seed is injected per-job by the orchestrator (sweep_seed + job_index) so no two
+# workers train an identical run — see issue #3 §8 anti-patterns.
+seed: 0
