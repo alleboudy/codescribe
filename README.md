@@ -59,6 +59,7 @@ You do **not** want:
 | [`docs/11-hardware.md`](docs/11-hardware.md) | When something OOMs or refuses to compile |
 | [`docs/12-glossary.md`](docs/12-glossary.md) | Hitting a term you don't recognise |
 | [`docs/13-further-reading.md`](docs/13-further-reading.md) | Wanting the original papers + external docs |
+| [`docs/14-fleet-training.md`](docs/14-fleet-training.md) | Putting a fleet of laptops to work (issue #3) — pairs with [`examples/fleet/`](examples/fleet/) |
 
 ---
 
