@@ -1,0 +1,78 @@
+# QLoRA defaults for Qwen 2.5 Coder 7B Instruct on a Blackwell-class GPU
+# (8 GB VRAM). Tuned to fit at 8 GB with Unsloth + bitsandbytes 4-bit +
+# gradient checkpointing.
+
+base_model: Qwen/Qwen2.5-Coder-7B-Instruct
+trust_remote_code: false        # Qwen2 is in-tree on transformers; never need RCE
+
+# Low-rank adapter (PEFT/LoRA)
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+  bias: none
+
+# 4-bit quantization of the frozen base (NF4)
+quantization:
+  load_in_4bit: true
+  bnb_4bit_compute_dtype: bfloat16
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+
+# Training schedule
+training:
+  # 1024 (not 2048) on an 8 GB-VRAM GPU. With seq_len 2048
+  # and Unsloth's padding-free batching, per-step VRAM pressure was variable
+  # (34s vs 300s/step, 6× spread) and the GPU started swapping. At 1024 the variance
+  # collapses and average step time is roughly 2× faster than the 85.8 s/step
+  # baseline. Document-format samples get truncated harder (first 1024 tokens
+  # only), but FIM and diff-instr samples are mostly under 1024 tokens anyway.
+  seq_len: 1024
+  batch_size: 1
+  grad_accum: 16             # effective batch = 16
+  epochs: 3
+  learning_rate: 2.0e-4
+  lr_schedule: cosine
+  warmup_ratio: 0.03
+  weight_decay: 0.01
+  optimizer: paged_adamw_8bit
+  bf16: true
+  fp16: false                # GPUs with native bf16 support — never use fp16
+  gradient_checkpointing: true
+  max_grad_norm: 1.0
+  seed: 1729
+
+# Periodicity
+intervals:
+  eval_steps: 200
+  save_steps: 500
+  logging_steps: 25
+
+# DataLoader
+dataloader:
+  num_workers: 2
+  pin_memory: true
+  shuffle: true
+
+# Smoke mode — overrides used when --smoke is passed on the CLI. Trains 10
+# steps, skips eval, skips save. Used as the Phase 2 DoD smoke test.
+smoke:
+  max_steps: 10
+  epochs: 1
+  eval_steps: 0
+  save_steps: 0
+  logging_steps: 1
+
+# Output
+output:
+  adapter_dir: checkpoints/sample-qwen7b-lora-v1
+  merged_dir: checkpoints/sample-qwen7b-merged-v1
+  gguf_path: checkpoints/sample-qwen7b-q4_k_m.gguf

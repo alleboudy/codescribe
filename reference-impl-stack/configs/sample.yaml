@@ -1,0 +1,86 @@
+# codescribe_train.data — generic per-repo config.
+#
+# Conservative defaults: any common source language, exclude common
+# build/test/lock/cache artefacts. Tune per repo by copying this file and
+# editing.
+
+repo_name: ~     # null -> use the repo's directory name
+seed: 0
+split_salt: ~    # null -> use repo_name
+
+split:
+  train: 0.90
+  val: 0.05
+  test: 0.05
+
+filter:
+  include:
+    extensions:
+      # Python
+      - py
+      # JS / TS
+      - js
+      - jsx
+      - ts
+      - tsx
+      # C / C++
+      - c
+      - cc
+      - cpp
+      - cxx
+      - h
+      - hh
+      - hpp
+      # Rust / Go / Java / Kotlin
+      - rs
+      - go
+      - java
+      - kt
+      # Ruby / PHP / Shell / SQL
+      - rb
+      - php
+      - sh
+      - bash
+      - sql
+      # Docs
+      - md
+      - rst
+  exclude:
+    paths:
+      - "**/.venv/**"
+      - "**/venv/**"
+      - "**/env/**"
+      - "**/node_modules/**"
+      - "**/__pycache__/**"
+      - "**/.pytest_cache/**"
+      - "**/.ruff_cache/**"
+      - "**/.mypy_cache/**"
+      - "**/.cache/**"
+      - "**/dist/**"
+      - "**/build/**"
+      - "**/target/**"
+      - "**/*.lock"
+      - "**/package-lock.json"
+      - "**/poetry.lock"
+      - "**/uv.lock"
+      - "**/yarn.lock"
+      - "**/pnpm-lock.yaml"
+  size:
+    min_bytes: 16
+    max_bytes: 524288   # 512 KiB
+
+formatters:
+  document:
+    enabled: true
+  fim:
+    enabled: true
+    samples_per_file: 2
+    min_middle_lines: 1
+    max_middle_lines: 8
+  diff_instr:
+    enabled: false      # noisy by default; opt-in per repo
+    max_diff_lines: 400
+    min_subject_chars: 12
+    max_subject_chars: 200
+    skip_merge_commits: true
+    max_commits: ~      # null -> all commits

@@ -1,0 +1,50 @@
+# Dockerfile.claw — sandbox image for the vendored claw-code harness.
+#
+# Build (from repo root):
+#   docker build -f Dockerfile.claw -t claw-code:vendored .
+#
+# Run (typically invoked indirectly via `--sandbox docker`):
+#   docker run --rm -i --network none \
+#     -v "$(pwd):/work" -w /work claw-code:vendored
+#
+# Trust posture:
+#   * `--network none` is the *intended* runtime mode. The image still
+#     needs network access at *build time* to fetch crates and apt deps;
+#     once built, no further egress is required.
+#   * The `claw` user is non-root. The image does not bake in any API
+#     keys; the caller injects them via env vars at `docker run` time.
+
+FROM rust:1.83-slim-bookworm AS builder
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        git \
+        libssl-dev \
+        pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY vendor/claw-code/ /src/
+
+WORKDIR /src/rust
+RUN cargo build --release --workspace \
+    && cp /src/rust/target/release/claw /usr/local/bin/claw \
+    && cargo clean
+
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        libssl3 \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 1000 claw \
+    && useradd --system --uid 1000 --gid 1000 --home /home/claw --shell /bin/sh --create-home claw
+
+COPY --from=builder /usr/local/bin/claw /usr/local/bin/claw
+
+USER claw
+WORKDIR /work
+
+ENTRYPOINT ["/usr/local/bin/claw"]
