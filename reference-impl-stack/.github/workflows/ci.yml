@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    # Non-GPU test surface: data + harness + backends + rag + servers. The
+    # `train` extra (torch/unsloth/bitsandbytes) needs CUDA, so train tests run
+    # on a GPU box, not here. No untrusted inputs are interpolated into run blocks.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.5.x"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Sync non-GPU extras
+        run: uv sync --extra data --extra harness --extra backends --extra rag --extra dev
+
+      - name: Lint
+        run: uv run ruff check codescribe_train/
+
+      - name: shellcheck scripts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y shellcheck
+          shellcheck \
+            scripts/bootstrap_linux.sh \
+            scripts/bootstrap_mac.sh \
+            scripts/build_claw_code.sh \
+            scripts/build_llama_cpp.sh \
+            scripts/relaunch-claw.sh \
+            scripts/run-claw.sh \
+            scripts/setup_wsl.sh
+
+      - name: Test (excludes GPU-only train suite)
+        run: uv run pytest -ra --ignore=tests/train

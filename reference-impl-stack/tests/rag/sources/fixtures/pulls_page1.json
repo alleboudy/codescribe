@@ -1,0 +1,44 @@
+[
+  {
+    "number": 11,
+    "title": "feat: closes #1",
+    "body": "Closes #1.\n\nImplements the diff parser.",
+    "state": "closed",
+    "merged_at": "2026-02-01T09:00:00Z",
+    "closed_at": "2026-02-01T09:00:00Z",
+    "created_at": "2026-01-20T08:00:00Z",
+    "updated_at": "2026-02-01T09:00:00Z",
+    "head": {"sha": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef", "ref": "feature/foo"},
+    "base": {"ref": "main"},
+    "user": {"login": "example-org"},
+    "draft": false
+  },
+  {
+    "number": 13,
+    "title": "wip: prototype",
+    "body": "Do not merge.",
+    "state": "open",
+    "merged_at": null,
+    "closed_at": null,
+    "created_at": "2026-04-01T10:00:00Z",
+    "updated_at": "2026-04-15T11:00:00Z",
+    "head": {"sha": "f00ba4f00ba4f00ba4f00ba4f00ba4f00ba4f00b", "ref": "feature/wip"},
+    "base": {"ref": "main"},
+    "user": {"login": "example-org"},
+    "draft": true
+  },
+  {
+    "number": 14,
+    "title": "fix: handle empties",
+    "body": null,
+    "state": "closed",
+    "merged_at": null,
+    "closed_at": "2026-05-10T12:00:00Z",
+    "created_at": "2026-05-01T10:00:00Z",
+    "updated_at": "2026-05-10T12:00:00Z",
+    "head": {"sha": "1234567890abcdef1234567890abcdef12345678", "ref": "fix/empty"},
+    "base": {"ref": "main"},
+    "user": {"login": "example-org"},
+    "draft": false
+  }
+]
