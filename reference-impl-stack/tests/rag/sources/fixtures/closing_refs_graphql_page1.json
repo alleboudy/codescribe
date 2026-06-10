@@ -1,0 +1,23 @@
+{
+  "data": {
+    "repository": {
+      "pullRequests": {
+        "pageInfo": {"hasNextPage": true, "endCursor": "Y3Vyc29yOnYyOpHOAbCdEf"},
+        "nodes": [
+          {
+            "number": 11,
+            "closingIssuesReferences": {"nodes": [{"number": 1}]}
+          },
+          {
+            "number": 14,
+            "closingIssuesReferences": {"nodes": [{"number": 7}, {"number": 8}]}
+          },
+          {
+            "number": 15,
+            "closingIssuesReferences": {"nodes": []}
+          }
+        ]
+      }
+    }
+  }
+}

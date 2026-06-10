@@ -1,0 +1,47 @@
+[
+  {
+    "number": 1,
+    "title": "First sample issue",
+    "body": "An older issue body.\n\nWith two paragraphs.",
+    "state": "closed",
+    "state_reason": "completed",
+    "labels": [{"name": "bug"}, {"name": "infra"}],
+    "assignees": [{"login": "example-org"}],
+    "user": {"login": "example-org"},
+    "created_at": "2026-01-02T08:00:00Z",
+    "updated_at": "2026-01-15T12:34:56Z",
+    "closed_at": "2026-01-15T12:34:56Z",
+    "html_url": "https://github.com/example-org/sample/issues/1",
+    "pull_request": null
+  },
+  {
+    "number": 7,
+    "title": "Newer issue with no body",
+    "body": null,
+    "state": "open",
+    "state_reason": null,
+    "labels": [],
+    "assignees": [],
+    "user": {"login": "example-org"},
+    "created_at": "2026-03-10T10:00:00Z",
+    "updated_at": "2026-04-22T18:00:00Z",
+    "closed_at": null,
+    "html_url": "https://github.com/example-org/sample/issues/7",
+    "pull_request": null
+  },
+  {
+    "number": 9,
+    "title": "This is actually a PR — should be skipped",
+    "body": "PRs appear in the issues endpoint with a pull_request key.",
+    "state": "open",
+    "state_reason": null,
+    "labels": [],
+    "assignees": [],
+    "user": {"login": "example-org"},
+    "created_at": "2026-04-30T10:00:00Z",
+    "updated_at": "2026-05-01T11:00:00Z",
+    "closed_at": null,
+    "html_url": "https://github.com/example-org/sample/pull/9",
+    "pull_request": {"url": "https://api.github.com/repos/example-org/sample/pulls/9"}
+  }
+]

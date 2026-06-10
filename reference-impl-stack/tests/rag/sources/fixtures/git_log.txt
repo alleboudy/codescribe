@@ -1,0 +1,5 @@
+a1b2c3d4e5f60718293a4b5c6d7e8f9012345678|2026-05-19T10:00:00+00:00|alice@example.com|Alice Author|feat(core): add diff parser
+b2c3d4e5f60718293a4b5c6d7e8f90123456789a|2026-05-19T11:30:00+00:00|bob@example.com|Bob Builder|fix(parser): handle empty diffs (#42)
+c3d4e5f60718293a4b5c6d7e8f9012345678901b|2026-05-19T12:45:00+00:00|alice@example.com|Alice Author|Merge pull request #43 from feature/branch
+d4e5f60718293a4b5c6d7e8f90123456789012cd|2026-05-19T13:00:00+00:00|carol@example.com|Carol Coder|chore: bump version. Merges PR #44
+e5f60718293a4b5c6d7e8f9012345678901234de|2026-05-19T14:15:00+00:00|dave@example.com|Dave Dev|docs: clarify usage | also note edge cases

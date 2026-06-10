@@ -1,0 +1,20 @@
+Merge pull request #43 from feature/branch
+
+This merges the feature branch.
+
+diff --git a/src/foo.py b/src/foo.py
+index 1234567..89abcde 100644
+--- a/src/foo.py
++++ b/src/foo.py
+@@ -1,3 +1,4 @@
+ def foo():
++    """Docstring."""
+     return 1
+
+diff --git a/src/bar.py b/src/bar.py
+index abcdef0..1234567 100644
+--- a/src/bar.py
++++ b/src/bar.py
+@@ -10,7 +10,7 @@ def bar():
+-    return None
++    return False

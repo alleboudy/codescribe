@@ -1,0 +1,140 @@
+[project]
+name = "codescribe-train"
+version = "0.0.1"
+description = "Strictly-local, repo-aware coding agent: data + QLoRA + vendored Rust harness + local inference."
+requires-python = ">=3.12"
+readme = "README.md"
+license = { text = "MIT" }
+
+dependencies = [
+    "pyyaml>=6.0.2",
+]
+
+[project.optional-dependencies]
+data = [
+    "transformers>=4.46.0",
+    "tokenizers>=0.20.0",
+    "datasets>=3.0.0",
+    "tqdm>=4.66.0",
+    "pathspec>=0.12.0",
+]
+train = [
+    # PyTorch CUDA wheels: torch is pinned to the pytorch-cu128 index below
+    # (see [tool.uv.sources]) so we get Blackwell-capable wheels (sm_120).
+    # CUDA 12.8 toolkit must be installed in WSL2 for bitsandbytes to build /
+    # find its dependencies — see scripts/setup_wsl.sh.
+    "torch>=2.5.0",
+    "transformers>=4.46.0",
+    "tokenizers>=0.20.0",
+    "datasets>=3.0.0",
+    "accelerate>=1.0.0",
+    "peft>=0.13.0",
+    "bitsandbytes>=0.44.0",
+    "trl>=0.11.0",
+    "unsloth>=2024.12",
+    "sentencepiece>=0.2.0",
+    "protobuf>=5.0.0",
+    "einops>=0.8.0",
+    # flash-attn is cross-built on a separate box and installed from a
+    # local wheel — no PyPI wheel matches torch 2.10 + cu128 + cp313 + sm_120,
+    # and a constrained-RAM machine rules out an in-tree
+    # source build. Build steps and the c10::cuda ABI history live in
+    # docs/known-issues.md (Flash Attention 2 — INSTALLED). Replace this
+    # comment with `flash-attn>=2.8.4` once an upstream wheel matches.
+]
+harness = [
+    # PyYAML is already in core deps; httpx is needed for the optional
+    # health-check probe of an OpenAI-compatible backend. Both are pulled
+    # lazily by codescribe_train.harness.cli — `--help` does not require either.
+    "httpx>=0.27.0",
+]
+backends = [
+    # httpx — health checks against /v1/models, /api/tags, etc. Lazy-imported
+    # so `import codescribe_train.backends.cli` stays cheap.
+    "httpx>=0.27.0",
+    # psutil — system RAM probe in `codescribe_train.backends.probe`. Falls back to
+    # parsing /proc/meminfo if absent, but psutil is small and worth keeping.
+    "psutil>=5.9.0",
+    # pynvml — optional GPU probe. The probe falls back to parsing
+    # `nvidia-smi --query-gpu=...` if pynvml isn't installed, so this stays
+    # in the optional dependency group rather than core.
+    "pynvml>=11.5.0",
+]
+rag = [
+    # Strictly-local RAG sidecar over ../your-repo git + example-org/sample
+    # GitHub issues/PRs. The legacy `extensions` extra (just `mcp>=1.0`)
+    # was folded into this group; both rag_server and repo-grep
+    # are satisfied by this extras set alone.
+    "httpx>=0.27.0",          # HTTP client; reserved for non-GitHub uses.
+                              # GitHub API egress goes through `gh` subprocess
+                              # per codescribe_train/rag/sources/AGENTS.md.
+    "pyyaml>=6.0.2",          # configs/rag.yaml loader
+    "pydantic>=2.6.0",        # typed config models in codescribe_train/rag/config.py
+    "tenacity>=8.5.0",        # retry on transient gh failures
+    "python-dateutil>=2.9.0", # GitHub ISO-8601 watermark math
+    "pathspec>=0.12.0",       # already used elsewhere; useful for path filters
+    "sqlite-vec>=0.1.6",      # vector store
+    "sentence-transformers>=3.0.0",  # local embedder; pulls torch
+    "numpy<2.0",              # sqlite-vec wheel ABI compat
+    # MCP Python SDK; the spec explicitly warns of API drift between
+    # minor versions (handler signatures and lowlevel.Server.call_tool
+    # validation behaviour have shifted across 1.x). The pin was tightened to
+    # admit patches but not minor bumps — re-test before widening.
+    "mcp>=1.27.0,<1.28.0",
+]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.7.0",
+]
+
+[project.scripts]
+# Top-level glue: `codescribe-train run --repo ... --adapter ...`. Imports
+# `codescribe_train.cli`, which lazy-imports backend / harness implementations
+# so `codescribe-train --help` does not pull httpx / psutil / pynvml.
+codescribe-train = "codescribe_train.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["codescribe_train"]
+
+# Pull torch from PyTorch's CUDA 12.8 index on Linux so we get sm_120
+# (Blackwell) wheels for training and sm_61 wheels for a Pascal-class GPU on
+# a Linux GPU host. On other platforms (e.g., macOS arm64 dev boxes) fall back to PyPI
+# so `uv sync --extra rag --extra dev` works for the scaffolding-only tests
+# the project ships — no CUDA build of torch exists for darwin.
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "PL"]
+ignore = [
+    "PLR0913",  # too many arguments — common in CLI/config code
+    "PLR2004",  # magic numbers — common in chunking/limits
+    "PLC0415", # function-level imports — deliberate (lazy load of train extras)
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"'); the latency test runs at this marker",
+]
+# pytest-asyncio mode: opt-in via the `@pytest.mark.asyncio` decorator.
+# The MCP server tests use the in-process anyio memory transport which
+# requires an event loop per test.
+asyncio_mode = "strict"

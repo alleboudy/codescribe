@@ -1,0 +1,59 @@
+# configs/backends/local-default.yaml — strictly-local backend defaults.
+#
+# This is the default backend stack for `codescribe-train run`. It launches
+# `llama-server` from the vendored, pinned-SHA llama.cpp build (see
+# `vendor/SECURITY-NOTES.md`). The server binds to 127.0.0.1 only — no
+# inbound connections from the LAN, no outbound network egress.
+#
+# Loaded by `codescribe_train.cli.main` when no `--backend-config` is passed.
+
+# Which backend to spin up. Must be one of the names known to
+# `codescribe_train.backends.cli.KNOWN_BACKENDS`. Stick with `llama-server` on
+# an 8 GB-VRAM GPU; vLLM is permitted but has heavyweight deps and
+# does not fit Qwen 7B in 8 GB without aggressive tuning.
+backend: llama-server
+
+# Loopback port. The harness connects to http://127.0.0.1:<port>.
+port: 8080
+
+# Loopback host. Do NOT change to 0.0.0.0 — that would expose the model
+# to the LAN. The strictly-local posture mandates loopback only.
+host: 127.0.0.1
+
+# Where the merged + quantised GGUF lives. Produced by `python -m
+# codescribe_train.train export` after a finished QLoRA run. Resolved relative
+# to the repo root if not absolute.
+gguf_path: checkpoints/sample-qwen7b-q4_k_m.gguf
+
+# Model identifier the harness sends in OpenAI Chat Completions requests.
+# The `openai/` prefix forces claw-code to use its OpenAI-compat client
+# and honour `OPENAI_BASE_URL`. Bare `qwen-*` / `qwen/*` names route to
+# DashScope by prefix-match (see vendor/SECURITY-NOTES.md row #5).
+# `-local` suffix is cosmetic — it reinforces that the destination is
+# loopback (OPENAI_BASE_URL above), so claw's "via openai" banner can't
+# be misread as a destination.
+model: openai/sample-qwen7b-local
+
+# Number of transformer layers to offload to the GPU. -1 lets llama.cpp
+# pick (typically all of them on an 8 GB-VRAM GPU). Use 0 to force CPU-only.
+gpu_layers: -1
+
+# KV-cache context size. 8192 fits Qwen 2.5 Coder 7B Q4_K_M in 8 GB VRAM
+# with --no-mmap. Raise to 16384 only if you have headroom; the model
+# itself supports more, but VRAM is the limiter on an 8 GB-VRAM GPU.
+ctx_size: 8192
+
+# --no-mmap on tight-VRAM hardware prevents the OS page-cache from racing
+# against llama.cpp's GPU upload. Set to false on systems with abundant
+# RAM where mmap-style sharing is preferable.
+no_mmap: true
+
+# How long to wait for the server to print the "HTTP server listening"
+# marker before giving up.
+startup_timeout_s: 60
+
+# Optional API-key the server requires from the client. The harness does
+# not need a real key for local inference; the wrapper sets a placeholder
+# `local-no-auth` if this is empty. If you do set one, the harness must
+# also be configured with the same value.
+api_key: ""
