@@ -1,0 +1,41 @@
+# Strictly-local RAG sidecar config — consumed by codescribe_train/rag/config.py.
+# Values match the design spec (canonical
+# implementation weights). The body_closes_keyword weight is 0.85 here,
+# reconciled against an earlier draft which used 0.7.
+# The strict pairing threshold (0.8) keeps closing-refs (1.0) and
+# body-keyword (0.85), drops the temporal-author heuristic (0.5).
+
+sources:
+  git:
+    repo_path: ../your-repo
+    since_sha: null               # null = full history
+  github:
+    owner: example-org
+    repo: sample
+    allowlist_hostname: api.github.com
+  worktree_docs:
+    # Working-tree documentation source: README, Makefile, docs/**/*.md,
+    # docker-compose*.yml, Dockerfile*, top-level *.sh. Re-indexed in full
+    # every run (tiny corpus, no watermark). Feeds the search_docs MCP tool.
+    repo_path: ../your-repo
+  rate_limit_rps: 5.0
+
+store:
+  db_path: indices/rag.db
+
+embed:
+  model_path: ~/.hf-models/bge-large-en-v1.5
+  device: auto                    # auto-picks cuda if available, fp16 on Pascal
+  batch_size: 32
+  max_length: 512
+
+pairing:
+  strict_threshold: 0.8
+  weights:
+    closing_issues_reference: 1.0
+    body_closes_keyword: 0.85
+    # NOTE: temporal_author_match is 0.3 here per an earlier draft, but the
+    # implementation in codescribe_train/rag/extract/pairing.py:pair_via_temporal
+    # uses 0.5 per the spec. The config is documentary (no consumer wires it
+    # yet); a later step will pick one when it actually reads PairingWeights.
+    temporal_author_match: 0.3
