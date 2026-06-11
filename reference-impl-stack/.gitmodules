@@ -1,0 +1,6 @@
+[submodule "vendor/claw-code"]
+	path = vendor/claw-code
+	url = https://github.com/ultraworkers/claw-code
+[submodule "llama.cpp"]
+	path = vendor/llama.cpp
+	url = https://github.com/ggml-org/llama.cpp.git

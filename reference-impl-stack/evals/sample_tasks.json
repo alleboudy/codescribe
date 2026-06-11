@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Handwritten qualitative task suite for the sample-fine-tuned Qwen 2.5 Coder 7B. Each task probes sample-specific knowledge. Scoring is substring-based against expected_signals (positive) and forbidden_signals (negative). Human review of the actual responses is the real gate; the substring score is just a fast filter.",
+  "tasks": [
+    {
+      "id": "T01-metric-explain",
+      "category": "qa",
+      "prompt": "Explain how the `delivery_reliability` analytics metric is scored in sample. What inputs does it consume, what's the rough algorithm, and what value range does it produce?",
+      "expected_signals": ["docs/METRICS.md", "orders", "variance", "weights", "0", "100"],
+      "forbidden_signals": ["I don't have access", "as an AI"]
+    },
+    {
+      "id": "T02-async-rationale",
+      "category": "qa",
+      "prompt": "Why does sample use SQLAlchemy AsyncSession instead of the synchronous Session for database operations in FastAPI handlers?",
+      "expected_signals": ["AsyncSession", "FastAPI", "async", "await", "concurrency"],
+      "forbidden_signals": ["Session(", "engine.connect()"]
+    },
+    {
+      "id": "T03-feature-flag-howto",
+      "category": "howto",
+      "prompt": "List the steps to add a new per-user feature flag in sample.",
+      "expected_signals": ["docs/FEATURE_FLAGS.md", "JSON", "features", "no migration", "User.features"],
+      "forbidden_signals": ["new boolean column", "alembic revision"]
+    },
+    {
+      "id": "T04-new-metric-stub",
+      "category": "implementation",
+      "prompt": "Write a stub for a new analytics metric `on_time_delivery_rate` that scores 0–100 based on the fraction of an account's orders that were delivered by their promised date. Follow sample's existing metric conventions.",
+      "expected_signals": ["None", "insufficient data", "async def", "core/config.py", "Settings", "weights"],
+      "forbidden_signals": ["return 0  # if no data", "return None  # no comment"]
+    },
+    {
+      "id": "T05-alembic-add-column",
+      "category": "implementation",
+      "prompt": "Write a new Alembic migration that adds a nullable `gift_wrap_fee_cents` Integer column to the `orders` table. Don't edit any existing migration.",
+      "expected_signals": ["op.add_column", "sa.Integer", "down_revision", "def upgrade", "def downgrade"],
+      "forbidden_signals": ["edit existing", "alter migration"]
+    },
+    {
+      "id": "T06-avoid-n-plus-one",
+      "category": "qa",
+      "prompt": "In sample's order-listing API each `Order` has many `LineItem`s. How do you load them without triggering an N+1 query, and where should that happen?",
+      "expected_signals": ["selectinload", "N+1", "eager", "single query", "hook"],
+      "forbidden_signals": ["lazy load in a loop", "query per row"]
+    },
+    {
+      "id": "T07-react-fetch-hook",
+      "category": "implementation",
+      "prompt": "Write a React hook in TypeScript that fetches an order by ID from `/api/orders/{id}` and returns `{ data, loading, error }`. Follow sample's convention that data fetching lives in hooks, never in component bodies.",
+      "expected_signals": ["useEffect", "useState", "useCallback", "fetch(", "loading", "error"],
+      "forbidden_signals": ["fetch in render", "useQuery"]
+    },
+    {
+      "id": "T08-add-parser",
+      "category": "howto",
+      "prompt": "How do I add a new import file format parser to sample (say, for a third-party marketplace's order export)? Outline the steps.",
+      "expected_signals": ["docs/HOW_TO_ADD_UPLOAD_FORMAT.md", "parser", "/new-parser", "IMPORT_FIELDS"],
+      "forbidden_signals": []
+    },
+    {
+      "id": "T09-none-vs-zero",
+      "category": "qa",
+      "prompt": "In sample's analytics scoring, what is the difference between a metric returning `None` and a metric returning `0`?",
+      "expected_signals": ["insufficient data", "auto-renormalise", "weights", "not zero"],
+      "forbidden_signals": ["zero is the same"]
+    },
+    {
+      "id": "T10-recharts-revenue-time",
+      "category": "implementation",
+      "prompt": "Write a Tailwind+Recharts React component (TSX) that takes an `order: Order` prop and shows a line chart of line-item count (y-axis) over time (x-axis). Follow sample's frontend conventions.",
+      "expected_signals": ["Recharts", "LineChart", "XAxis", "YAxis", "Line", "useMemo"],
+      "forbidden_signals": ["chart.js", "fetch inside the component body"]
+    },
+    {
+      "id": "T11-saenum-pattern",
+      "category": "qa",
+      "prompt": "Why does sample pass `native_enum=False, values_callable=...` when using SAEnum on VARCHAR columns? What goes wrong without it?",
+      "expected_signals": ["native_enum=False", "values_callable", "VARCHAR", "PostgreSQL"],
+      "forbidden_signals": []
+    },
+    {
+      "id": "T12-jwt-revocation",
+      "category": "qa",
+      "prompt": "How does sample revoke JWTs, and where does that logic live? If I'm adding refresh tokens, should I build a new revocation system?",
+      "expected_signals": ["Redis", "denylist", "src/auth", "reuse the existing"],
+      "forbidden_signals": ["build new", "reimplement"]
+    },
+    {
+      "id": "T13-feature-flags",
+      "category": "qa",
+      "prompt": "How are per-user feature flags stored and checked in sample? What's the pattern for gating a new feature to a subset of users?",
+      "expected_signals": ["features", "JSON column", "User", "flag", "gate"],
+      "forbidden_signals": ["boolean column per feature", "new table"]
+    },
+    {
+      "id": "T14-rate-limit-pattern",
+      "category": "qa",
+      "prompt": "What pattern does sample use for API rate limiting? Where would I add a rate limit to a new endpoint?",
+      "expected_signals": ["rules.md", "rate-limit"],
+      "forbidden_signals": []
+    },
+    {
+      "id": "T15-new-metric-test",
+      "category": "implementation",
+      "prompt": "Given a new analytics metric `on_time_delivery_rate`, write the matching pytest test in `backend/tests/`. Use the project's existing fixture conventions.",
+      "expected_signals": ["@pytest.mark.asyncio", "AsyncSession", "fixture", "assert"],
+      "forbidden_signals": ["unittest.TestCase"]
+    },
+    {
+      "id": "T16-import-field-mapping",
+      "category": "qa",
+      "prompt": "If I'm adding shipping-cost parsing for a new CSV import format, where does the field-to-model mapping go in sample?",
+      "expected_signals": ["docs/IMPORT_FIELDS.md", "parser"],
+      "forbidden_signals": []
+    },
+    {
+      "id": "T17-zustand-store",
+      "category": "implementation",
+      "prompt": "Write a Zustand store in TypeScript for a user's currently-selected order (id + minimal metadata). Include a setter and a clear action.",
+      "expected_signals": ["create", "zustand", "set(", "interface"],
+      "forbidden_signals": ["redux"]
+    },
+    {
+      "id": "T18-debug-async-leak",
+      "category": "qa",
+      "prompt": "I'm seeing 'Pool exhausted' errors under load in sample. The handler is async. What's the most likely cause and where do I start debugging?",
+      "expected_signals": ["AsyncSession", "session.close", "context manager", "leaked"],
+      "forbidden_signals": []
+    },
+    {
+      "id": "T19-async-bg-pattern",
+      "category": "implementation",
+      "prompt": "Write a Celery task that recomputes all analytics metrics for one order, given an order_id. Follow sample's existing Celery conventions.",
+      "expected_signals": ["@app.task", "celery", "asyncio.run", "AsyncSession", "order_id"],
+      "forbidden_signals": []
+    },
+    {
+      "id": "T20-pwa-outbox",
+      "category": "qa",
+      "prompt": "How does sample's offline mode work? What carries pending writes from the client back to the server when connectivity returns?",
+      "expected_signals": ["service worker", "IndexedDB", "outbox", "PWA"],
+      "forbidden_signals": []
+    }
+  ]
+}
