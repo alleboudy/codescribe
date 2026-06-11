@@ -1,0 +1,59 @@
+# Fleet inventory (codescribe issue #3 §5.1) — production / SSH example.
+# Drive a real workstation fleet with:  python -m codescribe_fleet sweep --mode ssh ...
+# Requires the `ssh` extra (asyncssh) and SSH key auth set up per issue #3 §4.4.
+
+coordinator:
+  ssh_host: localhost            # run the orchestrator here (NOT on a worker — §8)
+  workspace: ~/repos/codescribe-fleet
+
+# How the orchestrator launches training ON each worker. Production points at the
+# real train package built per issue #2 (`python -m codescribe_train.train ...`).
+# The local demo (configs/fleet.local.yaml) points at scripts/fake_train.py instead.
+train:
+  runner: "uv run python"        # prefix; becomes "<runner> -m <module> <subcommand> ..."
+  module: codescribe_train.train
+
+# Each worker = one Ada-class laptop. preflight_smoke_seconds is the §4.6
+# measured 10-step smoke time; the orchestrator uses it only for ETA estimates.
+workers:
+  - name: fleet-01
+    ssh_host: trainer-01
+    ssh_user: youruser
+    ssh_port: 22
+    identity_file: ~/.ssh/id_ed25519_fleet
+    workspace: /home/youruser/repos/codescribe-fleet
+    hf_cache: /home/youruser/.cache/huggingface
+    gpu_compute_cap: "8.9"        # Ada. NOT 7.5 (Turing), NOT 12.0 (Blackwell).
+    vram_gb: 8
+    socket_ifname: eno1           # used by Path B NCCL (issue #3 §6.3)
+    preflight_smoke_seconds: 280
+  - name: fleet-02
+    ssh_host: trainer-02
+    ssh_user: youruser
+    identity_file: ~/.ssh/id_ed25519_fleet
+    workspace: /home/youruser/repos/codescribe-fleet
+    hf_cache: /home/youruser/.cache/huggingface
+    gpu_compute_cap: "8.9"
+    vram_gb: 8
+    socket_ifname: eno1
+    preflight_smoke_seconds: 290
+  - name: fleet-03
+    ssh_host: trainer-03
+    ssh_user: youruser
+    identity_file: ~/.ssh/id_ed25519_fleet
+    workspace: /home/youruser/repos/codescribe-fleet
+    hf_cache: /home/youruser/.cache/huggingface
+    gpu_compute_cap: "8.9"
+    vram_gb: 8
+    socket_ifname: eno1
+    preflight_smoke_seconds: 285
+  - name: fleet-04
+    ssh_host: trainer-04
+    ssh_user: youruser
+    identity_file: ~/.ssh/id_ed25519_fleet
+    workspace: /home/youruser/repos/codescribe-fleet
+    hf_cache: /home/youruser/.cache/huggingface
+    gpu_compute_cap: "8.9"
+    vram_gb: 8
+    socket_ifname: eno1
+    preflight_smoke_seconds: 300
