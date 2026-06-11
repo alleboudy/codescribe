@@ -1,0 +1,33 @@
+# Local demo inventory — runs the WHOLE orchestrator on one machine, no GPU, no SSH.
+# Both "workers" are localhost; training is the mock scripts/fake_train.py which
+# honours the real `train` CLI contract (run/eval/smoke/export) but just sleeps and
+# writes deterministic adapter + eval-report files.
+#
+#   python -m codescribe_fleet sweep \
+#       --fleet configs/fleet.local.yaml \
+#       --sweep sweeps/lr-rank.yaml \
+#       --out sweeps/demo/ --mode local
+#
+# Then:  python -m codescribe_fleet summarise --sweep sweeps/demo/
+
+coordinator:
+  ssh_host: localhost
+  workspace: .
+
+train:
+  runner: "python"               # no uv needed for the mock
+  script: scripts/fake_train.py  # honours: run|eval|smoke|export --config/--dataset/--out/...
+
+workers:
+  - name: local-01
+    ssh_host: localhost
+    workspace: .
+    gpu_compute_cap: "8.9"
+    vram_gb: 8
+    preflight_smoke_seconds: 1
+  - name: local-02
+    ssh_host: localhost
+    workspace: .
+    gpu_compute_cap: "8.9"
+    vram_gb: 8
+    preflight_smoke_seconds: 1
