@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# Runtime artefacts produced by the orchestrator / demo:
+checkpoints/
+sweeps/
+logs/
+datasets/
+# Per-job rendered configs the worker writes under a localhost workspace (demo):
+configs/_sweep/
