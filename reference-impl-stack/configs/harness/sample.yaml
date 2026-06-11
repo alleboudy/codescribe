@@ -1,0 +1,49 @@
+# configs/harness/sample.yaml — sane defaults for any repo.
+#
+# Use this as the starting template when wiring up a new private repo:
+#
+#   cp configs/harness/sample.yaml configs/harness/<repo>.yaml
+#
+# Then narrow `allowed_tools`, point `prompt_overlay` at the repo's
+# CLAUDE.md / AGENTS.md / README.md, and audit any `mcp_servers` you add.
+
+default_permission_mode: ask
+
+allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  # Write and Bash are intentionally NOT in the generic default — they
+  # require trust the user must grant per-repo. Add them in a repo-
+  # specific overlay once the workflow needs them.
+
+denied_tools: []
+
+# Path is relative to the workdir; falls back gracefully if the file
+# isn't present.
+prompt_overlay: CLAUDE.md
+
+slash_commands:
+  - help
+  - status
+  - clear
+  - compact
+
+# MCP servers exposed to the agent during a `codescribe-train run` session.
+# Repo-relative paths work here because the orchestrator runs from a known
+# workdir. Audit any server you add — these run as local subprocesses.
+mcp_servers:
+  repo-grep:
+    command: python
+    args: ["-m", "codescribe_train.servers.repo_grep"]
+    env:
+      TARGET_REPO: ../your-repo
+  repo-rag:
+    command: python
+    args: ["-m", "codescribe_train.servers.rag_server"]
+    env:
+      RAG_DB_PATH: indices/rag.db
+      RAG_LOG_PATH: logs/rag_server.log
+
+aliases: {}

@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# uv
+# (uv.lock is committed; .python-version is committed)
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Phase 1/2 artifacts (large, regenerable)
+datasets/
+checkpoints/
+*.gguf
+*.safetensors
+# Unsloth regenerates these on import
+unsloth_compiled_cache/
+# transformers TrainerState dumps
+runs/
+# belt + suspenders — we already disable W&B
+wandb/
+
+# Phase 3/4 vendored build outputs
+vendor/*/target/
+vendor/*/build/
+vendor/llama.cpp/build/
+
+# Local logs / scratch
+*.log
+scratch/
+.notes/
+
+# an agent CLI per-machine state (memory + plans live elsewhere)
+.claude/handoff*.md
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
+.worktrees/
+
+# claw per-session state (created automatically when claw runs)
+.claw/
+# .claude.json — claw does NOT read this (its config discovery merges
+# .claw.json / .claw/settings.json only); the permission gate lives in
+# .claw/settings.json. The `codescribe-train run` orchestrator may still write
+# a .claude.json, so keep it gitignored as per-host state.
+.claude.json
+
+# RAG sidecar runtime artefacts (regenerable by the indexer)
+indices/
+logs/
+eval-report.json

@@ -1,0 +1,31 @@
+# configs/backends/lan-remote.yaml — example RemoteBackend config.
+#
+# Disabled by default per the strictly-local posture. Enable explicitly:
+#
+#   export CODESCRIBE_ENABLE_REMOTE_BACKEND=1
+#   codescribe-train run --backend-config configs/backends/lan-remote.yaml ...
+#
+# Even with the env var set, RemoteBackend refuses any URL that is not
+# loopback / RFC 1918 / RFC 4193 / link-local — so a misconfigured DNS
+# pointing the URL at a public host gets rejected. Read
+# `docs/STRICTLY-LOCAL-POSTURE.md` and `docs/HARDWARE-AND-PERFORMANCE.md`
+# before using this config.
+#
+# Use case: the Pascal-class GPU desktop on the same private LAN running
+# `llama-server` for a 14B Q4 model that doesn't fit on a low-VRAM client.
+# The second machine is "another machine on your LAN" — still inside a
+# private LAN, but still crosses a trust boundary.
+
+backend: remote
+
+# The second machine's LAN-private URL. Adjust to match your /etc/hosts entry
+# or static IP on your router.
+url: http://desktop.lan:8080
+
+# Model identifier the harness sends. Same `openai/` prefix rule applies —
+# see configs/backends/local-default.yaml for the routing rationale.
+model: openai/sample-qwen14b
+
+# Health-check probe before starting the session.
+require_health_on_start: true
+health_timeout_s: 2.0
