@@ -40,7 +40,7 @@ data → train → serve → harness → (RAG, MCP server)
 Layered on top:
 
 5. **RAG** — Local indexer over Perforce + Bugzilla (or any other code+issue stack), retrieval served as MCP tools. See [`07-mcp.md`](07-mcp.md) and [`08-rag.md`](08-rag.md). Issue [#4](https://github.com/alleboudy/codescribe/issues/4) is the canonical plan.
-6. **Symbolic memory + reasoning** — A typed knowledge graph the assistant queries for *exact structural* facts (what calls what, which conventions apply), a nightly "dream" loop that keeps it current, and a small deductive engine that reasons over it (transitive reach, change-impact analysis, "what breaks if I change X"). See [`14-agent-memory-and-dreaming.md`](14-agent-memory-and-dreaming.md) and [`15-deductive-reasoning-and-imagination.md`](15-deductive-reasoning-and-imagination.md).
+6. **Symbolic memory + reasoning** — A typed knowledge graph the assistant queries for *exact structural* facts (what calls what, which conventions apply), a nightly "dream" loop that keeps it current, and a small deductive engine that reasons over it (transitive reach, change-impact analysis, "what breaks if I change X"). Concepts: [`14-agent-memory-and-dreaming.md`](14-agent-memory-and-dreaming.md) and [`15-deductive-reasoning-and-imagination.md`](15-deductive-reasoning-and-imagination.md); build plan: [`18-building-the-neurosymbolic-layer.md`](18-building-the-neurosymbolic-layer.md).
 
 ## Why a fine-tune AND not just RAG (or vice versa)
 
@@ -90,3 +90,4 @@ See [`11-hardware.md`](11-hardware.md) for the VRAM math.
 | [`15-deductive-reasoning-and-imagination.md`](15-deductive-reasoning-and-imagination.md) | When one-hop facts aren't enough — transitive reach, impact analysis, "what breaks if I change X" |
 | [`16-lessons-and-fixes.md`](16-lessons-and-fixes.md) | Before you build or review any layer — the real bugs in this class of stack and their fix patterns |
 | [`17-runbooks.md`](17-runbooks.md) | When you're operating the stack — auditing it, re-gating an eval, shipping an index |
+| [`18-building-the-neurosymbolic-layer.md`](18-building-the-neurosymbolic-layer.md) | When you're *building* the memory + reasoning layer — the phased plan, schema, and Definition of Done per phase |

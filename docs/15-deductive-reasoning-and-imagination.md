@@ -4,6 +4,8 @@
 
 The two pay one debt each. The reasoner is the "put a logic engine on the same triples" step the memory doc deferred. Imagination is the answer to the memory doc's warning that *fact-echo* synthesis regresses structural recall: what you actually want to teach a model is **cross-file reasoning chains**, and those fall straight out of a deductive engine with a proof trace.
 
+> **Building it:** this doc is the *concepts*; the phased build plan (phases R1–R4 — the deductive core, the tools, and imagination synthesis) is [`18-building-the-neurosymbolic-layer.md`](18-building-the-neurosymbolic-layer.md).
+
 ## 1. What the graph can't do yet
 
 `query_facts` ([`14 § 5`](14-agent-memory-and-dreaming.md)) answers **one hop**. The interesting questions are multi-hop:
