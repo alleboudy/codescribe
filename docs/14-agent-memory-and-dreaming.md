@@ -5,6 +5,8 @@ The fine-tune ([`02-fine-tuning.md`](02-fine-tuning.md)) and the RAG index ([`08
 This doc adds a **symbolic memory** — a typed knowledge graph the assistant reads at query time and writes to over time — and a nightly **consolidation loop** (the "dream") that distills the codebase and the operator's own interactions into durable facts. It is the layer that makes the stack *neuro-symbolic in practice*: the model reaches for a structured query when precision matters and vector search when the question is fuzzy.
 
 > Scope note: this is optional, sits *on top of* the RAG, and touches no weights until the gated retrain step (§7). Everything before that is reversible — delete the store and you are back to the prior system exactly.
+>
+> **Building it:** this doc is the *concepts*. The phased build plan — schema, entry points, and a Definition of Done per phase — is [`18-building-the-neurosymbolic-layer.md`](18-building-the-neurosymbolic-layer.md).
 
 ## 1. Why symbolic memory, next to a vector index
 
