@@ -61,6 +61,21 @@ External links for each topic. Use these when the in-tree docs aren't deep enoug
 - **Community server list**: https://github.com/modelcontextprotocol/servers
 - **Anthropic's launch announcement**: https://www.anthropic.com/news/model-context-protocol
 
+## Neuro-symbolic, agent memory & reasoning
+
+For [`14-agent-memory-and-dreaming.md`](14-agent-memory-and-dreaming.md) and [`15-deductive-reasoning-and-imagination.md`](15-deductive-reasoning-and-imagination.md).
+
+- **MemGPT / Letta** — context window as OS-managed RAM, paged memory: https://arxiv.org/abs/2310.08560
+- **Generative Agents** (Park et al., 2023) — memory stream + `recency × importance × relevance` + reflection: https://arxiv.org/abs/2304.03442
+- **Reflexion** (Shinn et al., 2023) — agents reflecting on their own experience: https://arxiv.org/abs/2303.11366
+- **"The Curse of Recursion"** (Shumailov et al., *Nature* 2024) — model collapse; why grounded + eval-gated synthesis is non-negotiable: https://www.nature.com/articles/s41586-024-07566-y
+- **STaR** (Zelikman et al., 2022) — bootstrap by keeping self-generated outputs that pass a check: https://arxiv.org/abs/2203.14465
+- **World Models** (Ha & Schmidhuber, 2018) — training inside imagined rollouts: https://worldmodels.github.io/
+- **Dreamer v3** (Hafner et al., 2023) — control by latent imagination: https://arxiv.org/abs/2301.04104
+- **AlphaGeometry** (Trinh et al., *Nature* 2024) — neural proposes, symbolic verifies: https://www.nature.com/articles/s41586-023-06747-5
+- **Soufflé** — a fast Datalog engine that compiles to C++ (the reasoner "bolt-on"): https://souffle-lang.github.io/
+- **RETE** (Forgy, 1982) — incremental cached evaluation over a changing fact base: https://www.csl.sri.com/users/mwfong/technical/rete-forgy82.pdf
+
 ## Harnesses
 
 - **claw-code** (vendored in this stack): ultraworkers/claw-code on GitHub (private)
