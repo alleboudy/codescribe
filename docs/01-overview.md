@@ -91,3 +91,4 @@ See [`11-hardware.md`](11-hardware.md) for the VRAM math.
 | [`16-lessons-and-fixes.md`](16-lessons-and-fixes.md) | Before you build or review any layer — the real bugs in this class of stack and their fix patterns |
 | [`17-runbooks.md`](17-runbooks.md) | When you're operating the stack — auditing it, re-gating an eval, shipping an index |
 | [`18-building-the-neurosymbolic-layer.md`](18-building-the-neurosymbolic-layer.md) | When you're *building* the memory + reasoning layer — the phased plan, schema, and Definition of Done per phase |
+| [`19-evaluating-quality.md`](19-evaluating-quality.md) | When you want to *prove* each layer helps — the LLM vs +RAG vs +neuro-symbolic ablation, its metrics, and real results |
