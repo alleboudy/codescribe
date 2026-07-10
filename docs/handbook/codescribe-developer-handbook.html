@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>codescribe — Developer Handbook</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 18mm 18mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; color: #1a1a1a; margin: 0; }
+  h1,h2,h3,h4 { font-weight: 700; line-height: 1.2; color: #0b3d5c; page-break-after: avoid; }
+  h1 { font-size: 22pt; margin: 0 0 6pt; }
+  h2 { font-size: 16pt; margin: 20pt 0 6pt; border-bottom: 2px solid #0b3d5c; padding-bottom: 3pt; }
+  h3 { font-size: 12.5pt; margin: 14pt 0 4pt; color: #14507a; }
+  h4 { font-size: 11pt; margin: 10pt 0 3pt; color: #333; }
+  p { margin: 5pt 0; }
+  a { color: #14507a; text-decoration: none; }
+  code { font-family: "Menlo","Consolas",monospace; font-size: 9pt; background: #eef2f5; padding: 0.5pt 3pt; border-radius: 3px; color: #a3324f; }
+  pre { font-family: "Menlo","Consolas",monospace; font-size: 8.4pt; background: #f6f8fa; border: 1px solid #d7dde3;
+        border-left: 3px solid #0b3d5c; border-radius: 4px; padding: 7pt 9pt; overflow: hidden;
+        white-space: pre-wrap; word-break: break-word; line-height: 1.4; page-break-inside: avoid; }
+  pre code { background: none; padding: 0; color: #24303a; }
+  table { border-collapse: collapse; width: 100%; margin: 7pt 0; font-size: 9pt; page-break-inside: avoid; }
+  th,td { border: 1px solid #cbd5dc; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  th { background: #0b3d5c; color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #f3f6f8; }
+  ul,ol { margin: 5pt 0; padding-left: 20pt; }
+  li { margin: 2.5pt 0; }
+  .callout { border-radius: 5px; padding: 8pt 11pt; margin: 9pt 0; font-size: 9.6pt; page-break-inside: avoid; }
+  .warn { background: #fff5f5; border: 1px solid #f0b3b3; border-left: 4px solid #c0392b; }
+  .tip  { background: #f0f9f4; border: 1px solid #b3ddc4; border-left: 4px solid #1e8449; }
+  .note { background: #f4f7fb; border: 1px solid #b8cbe0; border-left: 4px solid #14507a; }
+  .callout .lbl { font-weight: 700; text-transform: uppercase; font-size: 8pt; letter-spacing: 0.5px; display:block; margin-bottom: 2pt; }
+  .warn .lbl { color: #c0392b; } .tip .lbl { color: #1e8449; } .note .lbl { color: #14507a; }
+  .cover { height: 252mm; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .cover .kicker { color: #14507a; font-size: 12pt; letter-spacing: 3px; text-transform: uppercase; }
+  .cover h1 { font-size: 40pt; color: #0b3d5c; margin: 6pt 0; }
+  .cover .sub { font-size: 15pt; color: #555; margin-top: 4pt; }
+  .cover .meta { margin-top: 40pt; font-size: 10pt; color: #666; border-top: 1px solid #ccc; padding-top: 10pt; }
+  .part { page-break-before: always; }
+  .toc { page-break-after: always; }
+  .toc ol { list-style: none; padding-left: 0; }
+  .toc > ol > li { font-weight: 700; margin-top: 7pt; color: #0b3d5c; }
+  .toc ol ol { padding-left: 16pt; } .toc ol ol li { font-weight: 400; color: #333; }
+  .small { font-size: 8.6pt; color: #666; }
+  .kbd { font-family: Menlo,monospace; font-size: 8.5pt; background:#2b3a44; color:#e8eef2; padding:1pt 4pt; border-radius:3px; }
+  .diagram { font-family: Menlo,monospace; font-size: 8pt; line-height: 1.35; background:#0b1f2a; color:#cfe3ef;
+             padding: 10pt; border-radius: 5px; white-space: pre; overflow: hidden; page-break-inside: avoid; }
+  .lead { font-size: 11pt; color: #333; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 12pt 0; }
+  .fileref { font-family: Menlo,monospace; font-size: 8.6pt; color: #0b3d5c; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<section class="cover">
+  <div class="kicker">Developer Handbook</div>
+  <h1>codescribe</h1>
+  <div class="sub">A strictly-local, fine-tuned + retrieval-augmented + neuro-symbolic coding-assistant stack — the complete developer's guide.</div>
+  <div class="meta">
+    <strong>Scope:</strong> everything an engineer needs to understand and build this stack — background, concept refreshers (with a deep dive on RAG and neuro-symbolic AI), architecture, the code map, the two-machine setup, the evaluation results, and the landmines that cost real debugging time.<br><br>
+    <strong>What this is:</strong> a coding assistant for a <em>private codebase</em> — one you cannot send to a cloud model (NDA, customer contract, regulatory or security constraint). It fine-tunes a small open-weights coder on your code, serves it locally, and augments it with a retrieval index and a symbolic knowledge graph, so a modest model that <em>knows your codebase</em> beats a big model that has never seen it.<br><br>
+    <span class="small">This is the teachable, source-agnostic reference. It names no specific codebase, host, or operator — everything is described by role and by concept, so it is safe to share.</span>
+  </div>
+</section>
+
+<!-- TOC -->
+<section class="toc">
+  <h2 style="border:none">Contents</h2>
+  <ol>
+    <li>Part I — Orientation
+      <ol>
+        <li>1.1 What this stack is (and is not)</li>
+        <li>1.2 The prime directive: strictly local</li>
+        <li>1.3 The capability ceiling</li>
+        <li>1.4 The mental model: four phases + two memories</li>
+      </ol>
+    </li>
+    <li>Part II — Concept refreshers
+      <ol>
+        <li>2.1 Language models &amp; the base model</li>
+        <li>2.2 Fine-tuning: LoRA → QLoRA → Unsloth</li>
+        <li>2.3 Model collapse &amp; why we eval-gate</li>
+        <li>2.4 RAG — retrieval-augmented generation (deep dive)</li>
+        <li>2.5 Neuro-symbolic AI (deep dive)</li>
+        <li>2.6 MCP — how tools reach the model</li>
+      </ol>
+    </li>
+    <li>Part III — Architecture &amp; code map
+      <ol>
+        <li>3.1 The end-to-end pipeline</li>
+        <li>3.2 Package by package</li>
+        <li>3.3 The two data stores</li>
+        <li>3.4 Configuration</li>
+      </ol>
+    </li>
+    <li>Part IV — Infrastructure &amp; operations
+      <ol>
+        <li>4.1 The two machine roles</li>
+        <li>4.2 Runbooks</li>
+        <li>4.3 The strictly-local posture in practice</li>
+      </ol>
+    </li>
+    <li>Part V — Evaluation: does each layer earn its place?
+      <ol>
+        <li>5.1 Methodology</li>
+        <li>5.2 Single-hop results</li>
+        <li>5.3 Multi-hop results — the neuro-symbolic win</li>
+      </ol>
+    </li>
+    <li>Part VI — Landmines: the traps that already bit</li>
+    <li>Part VII — Current state &amp; roadmap</li>
+    <li>Appendix A — Glossary</li>
+    <li>Appendix B — Package &amp; command index</li>
+  </ol>
+</section>
+
+<!-- PART I -->
+<section class="part">
+<h1>Part I — Orientation</h1>
+
+<h2>1.1 What this stack is (and is not)</h2>
+<p class="lead">codescribe turns a small, open-weights code model into a competent assistant <em>for one specific private codebase</em> — and does the whole thing on your own hardware, with nothing leaving the machine.</p>
+<p>You have a private codebase: tens of thousands of files, years of history, lots of project-specific patterns. You want an assistant that <em>actually knows your code</em> — names your modules correctly, follows your idioms, knows where the bodies are buried — and you cannot send any of it to a cloud model. There are three ways to give a generic LLM project-specific knowledge: prompting (doesn't scale), <strong>RAG</strong> (retrieve relevant snippets at query time), and <strong>fine-tuning</strong> (bake knowledge into the weights). This stack does <strong>fine-tuning + RAG together</strong>, and adds a third, sharper layer — a <strong>neuro-symbolic</strong> knowledge graph with a deductive reasoner.</p>
+<p>Concretely, it is a pipeline that: (1) turns any source tree into training data; (2) fine-tunes <strong>Qwen 2.5 Coder 7B</strong> with QLoRA on an 8&nbsp;GB laptop GPU; (3) serves the result through a local OpenAI-compatible inference server; and (4) lets you drive any coding harness against it. On top sit the two memories — a RAG index (fuzzy recall of code, docs, issues, changes) and the neuro-symbolic layer (exact, provenance-backed structural facts + reasoning).</p>
+<p>It is <strong>not</strong> a general chat assistant, not a hosted product, and not trying to beat frontier models. It is a single-operator system tuned to one codebase.</p>
+
+<h2>1.2 The prime directive: strictly local</h2>
+<p>Every design decision bows to one constraint: <strong>data leaving the host is a failure mode, not a preference.</strong> This is the reason the stack exists. Concrete consequences:</p>
+<ul>
+  <li><strong>No cloud GPUs</strong> — training and inference run on your own hardware.</li>
+  <li><strong>No cloud embedding APIs</strong> — embeddings for RAG run locally on the same GPU.</li>
+  <li><strong>No cloud vector stores</strong> — SQLite + <code>sqlite-vec</code> is the entire vector layer.</li>
+  <li><strong>No telemetry</strong> — no Weights &amp; Biases, no Sentry, no model-hub upload, no <code>POST</code> to anything off an explicit allowlist (the model hub for <em>downloads</em>; your own Perforce and Bugzilla servers on the LAN).</li>
+  <li><strong>Loopback by default</strong> — any HTTP component binds <code>127.0.0.1</code>; binding <code>0.0.0.0</code> needs an explicit <code>unsafe_bind_all=True</code> flag and trips static-test warnings.</li>
+</ul>
+<p>The whole system's Definition-of-Done is verified with an <strong>egress audit</strong>: a full session run under <code>strace -e trace=connect</code> showing <em>zero non-loopback <code>connect()</code> calls</em>. Any feature that touches the network must re-pass it.</p>
+<div class="warn"><span class="lbl">Rule you will not talk your way out of</span> If a task seems to need a cloud call, an upload, or a public endpoint — <strong>stop</strong>. The answer is "do it locally or don't do it." This has already killed otherwise-reasonable ideas, and that is the point.</div>
+
+<h2>1.3 The capability ceiling</h2>
+<p>The accepted ceiling is <strong>intern-level</strong> assistance, and that is fine. A 7B model fine-tuned on one codebase will not reason like a frontier model. The bet: <em>a modest model that knows your code cold, cites real sources, and can reason over its structure</em> beats a bigger model that has never seen your code — for the narrow, high-frequency tasks (where is X defined, what calls Y, what breaks if I change Z, what's the convention here). Improvement comes from better base models, recipes, or local hardware — never the cloud.</p>
+
+<h2>1.4 The mental model: four phases + two memories</h2>
+<div class="diagram">
+      DATA ──▶ TRAIN ──▶ SERVE ──▶ HARNESS              (the four build phases)
+   src→JSONL   QLoRA    llama.cpp   bring-your-own
+                 │          │         (claw/aider/…)
+                 ▼          ▼             │
+             LoRA adapter  GGUF          │ ◀── you talk to this
+                                         ▲
+                        ┌────────────────┴──────────────────┐
+                        │            MCP tool calls          │
+              ┌─────────┴─────────┐               ┌──────────┴───────────────┐
+              │   RAG  (fuzzy)     │               │  NEURO-SYMBOLIC (exact)  │
+              │  vectors + FTS5    │               │  typed knowledge graph   │
+              │  code·docs·Bugzilla│               │  entities/facts/proof    │
+              │  ·Perforce changes │               │  + deductive reasoner    │
+              └───────────────────┘               │  + nightly "dream" loop  │
+              "what looked like this?"             └──────────────────────────┘
+                                                    "what is exactly true, and why?"
+</div>
+<ul>
+  <li><strong>The four phases</strong> depend in strict order: <code>data → train → serve → harness</code>. Each hides behind an interface so it can be swapped.</li>
+  <li><strong>The two memories</strong> are augmentations on top, both reached through <strong>MCP tools</strong>:
+    <ul>
+      <li><strong>RAG</strong> — a <em>non-parametric, fuzzy</em> memory: "show me code/text that looks like this query." Fresh, broad, shallow about structure.</li>
+      <li><strong>Neuro-symbolic (NS)</strong> — an <em>exact, structured</em> memory: "this function calls that one, defined here, and here is the proof." Precise, provenance-backed, can <em>reason</em> multi-hop.</li>
+    </ul>
+  </li>
+</ul>
+<p>The evaluation's headline (Part V) is that these two win on <em>different axes</em> and should be turned on for different jobs. NS is not "better RAG" — they are complementary.</p>
+</section>
+
+<!-- PART II -->
+<section class="part">
+<h1>Part II — Concept refreshers</h1>
+<p class="lead">Assume a strong engineer, rusty on the ML specifics. Skim what you know; the RAG (2.4) and neuro-symbolic (2.5) sections are the ones the rest of the stack leans on hardest.</p>
+
+<h2>2.1 Language models &amp; the base model</h2>
+<p>An LLM predicts the next <em>token</em> given the preceding ones. Everything it "knows" is compressed into its weights — its <strong>parametric memory</strong>, which is (a) <em>frozen</em> at training time, (b) <em>lossy</em> (statistical tendencies, not verbatim facts — hence hallucination), and (c) <em>uncited</em>. RAG and NS exist to patch exactly these three weaknesses.</p>
+<p>The base model is <strong>Qwen 2.5 Coder 7B Instruct</strong>, chosen for its strong code performance at a size that fine-tunes on 8&nbsp;GB. Its tokenizer — including its <strong>FIM</strong> (fill-in-the-middle) tokens — is a <em>contract</em>: you cannot swap the base model without re-running the data pipeline, because the special tokens change.</p>
+
+<h2>2.2 Fine-tuning: LoRA → QLoRA → Unsloth</h2>
+<p>Fine-tuning continues training on your data so the weights absorb your domain. Full fine-tuning of a 7B needs far more VRAM than a laptop has; three stacked optimisations make it fit:</p>
+<ol>
+  <li><strong>LoRA (Low-Rank Adaptation)</strong> — freeze the big matrices, learn small low-rank <em>adapters</em> alongside (~0.1–1% as many parameters). The output is a small, swappable adapter file, not a whole model.</li>
+  <li><strong>QLoRA (Quantized LoRA)</strong> — additionally store the frozen base in <strong>4-bit</strong> (NF4), ~4× less memory; adapters still train in bf16. This is what makes a 7B trainable on 8&nbsp;GB.</li>
+  <li><strong>Unsloth</strong> — hand-optimised kernels for exactly this QLoRA path; faster and lower-memory than vanilla PEFT. Mandatory on the 8&nbsp;GB card. Optimizer: <code>paged_adamw_8bit</code>.</li>
+</ol>
+<p>The served model is exported to <strong>Q4_K_M GGUF</strong> — a 4-bit format the vendored <code>llama.cpp</code> server loads. Training samples come in three shapes (<em>FIM</em> completion, <em>document</em> language-modelling, <em>diff-instruction</em>), and splits are made <strong>by file path, never by chunk</strong>, so no chunk of a file leaks across train/val/test.</p>
+
+<h2>2.3 Model collapse &amp; why we eval-gate</h2>
+<p>Train a model on its own synthetic output repeatedly and quality decays — variance collapses, rare patterns vanish. This is <strong>model collapse</strong> ("the curse of recursion"), a live risk because the neuro-symbolic layer <em>generates</em> synthetic training data. The defence is an <strong>eval-gated retrain</strong>, the only weight-touching phase: assemble real + capped-synthetic data, retrain, then a <strong>beat-or-discard gate</strong> requires the new adapter to beat the current one on a frozen, synthetic-free eval, or it is thrown away. Never promote a model that did not measurably beat its predecessor.</p>
+
+<h2>2.4 RAG — retrieval-augmented generation (deep dive)</h2>
+<p class="lead">RAG gives the model a second memory it can look things up in at inference time: an external, updatable index you <em>retrieve</em> from and <em>prepend</em> to the prompt. Instead of hoping the answer is baked into the weights, you fetch relevant text and let the model read it.</p>
+<div class="diagram">
+  query ──▶ [retrieve top-k relevant chunks] ──▶ prepend to prompt ──▶ model reads them ──▶ answer
+                     │
+           two retrieval signals, fused:
+           (1) semantic  (embeddings + vector search)
+           (2) lexical   (FTS5 keyword / BM25)
+</div>
+<h3>Embeddings &amp; vector search</h3>
+<p>An <strong>embedding</strong> is a dense vector (here, <strong>1024 floats</strong>, from a local <strong>bge-large</strong> embedder) placing semantically similar texts near each other. Retrieve by embedding the query and finding the nearest index vectors (cosine/L2). This catches <em>meaning</em> — "authenticate a user" can match code that never says "authenticate." The vector store is <strong>sqlite-vec</strong>: <code>vec0</code> virtual tables holding <code>FLOAT[1024]</code>, KNN inside SQLite — the whole index is one <code>.db</code> file, no separate service.</p>
+<h3>Lexical search (FTS5) and why you still need it</h3>
+<p>Embeddings blur <em>exact</em> tokens — a specific function name, an error string, a flag. <strong>FTS5</strong> is SQLite's full-text search (inverted index, BM25, porter stemming); it nails exact-identifier lookups embeddings miss. Running both and fusing them is <strong>hybrid retrieval</strong>.</p>
+<h3>RRF — fusing the two rankings</h3>
+<p><strong>Reciprocal Rank Fusion</strong> merges the two ranked lists without comparable scores: each document scores <code>Σ 1/(k + rank_i)</code> (small constant <em>k</em>) and you re-sort. High rank by <em>either</em> signal floats a document up; high by <em>both</em> wins. Simple, robust, scale-agnostic.</p>
+<h3>What is indexed, and chunking</h3>
+<p>The index is not just code — it ingests several forms of institutional memory:</p>
+<table>
+  <tr><th>Source</th><th>Why it matters</th></tr>
+  <tr><td>Code files (chunked)</td><td>the actual implementation</td></tr>
+  <tr><td>Docs (Markdown)</td><td>design intent, READMEs</td></tr>
+  <tr><td>Bugzilla bugs</td><td>"why did we do X", failure history</td></tr>
+  <tr><td>Perforce changes / reviews</td><td>rationale, discussion, diffs</td></tr>
+</table>
+<p><strong>Chunking</strong> splits long files into retrievable units (functions, sections, windows) — you cannot embed a 2,000-line file as one vector meaningfully. Each chunk keeps its <code>file_path</code> + line span so a citation can be produced.</p>
+<div class="warn"><span class="lbl">Landmine — external-content FTS5</span> The FTS5 tables mirror another table (<code>content='code_chunks'</code>) rather than storing their own copy. Deleting rows has a strict <strong>order</strong>: delete the <em>FTS</em> row <strong>first</strong> (while the content row still exists, so FTS recomputes the right terms to remove), <em>then</em> the vector row, <em>then</em> the content row. Wrong order leaves "ghost" terms that corrupt search. (See Part VI.)</div>
+<h3>When RAG vs fine-tuning vs tools vs NS</h3>
+<table>
+  <tr><th>Use…</th><th>When you need…</th><th>Weakness</th></tr>
+  <tr><td>Fine-tune</td><td>fluent house style, broad structure, zero-latency recall</td><td>ages; invents specifics; can't cite</td></tr>
+  <tr><td>RAG</td><td>fresh, specific snippets; things newer than the fine-tune</td><td>shallow on structure; can't chain; retrieval latency</td></tr>
+  <tr><td>Tools (grep/etc.)</td><td>exact current file contents on demand</td><td>needs the agent to know what to look for</td></tr>
+  <tr><td>Neuro-symbolic</td><td>exact relationships, provenance, multi-hop reasoning</td><td>silent outside the graph; build cost</td></tr>
+</table>
+<p><strong>RAG's signature axis is freshness.</strong> It is measurably the <em>wrong</em> tool for structural reasoning — the multi-hop result in Part V shows it actively hurting.</p>
+
+<h2>2.5 Neuro-symbolic AI (deep dive)</h2>
+<p class="lead">Where the LLM is a fuzzy pattern-matcher and RAG is fuzzy lookup, the neuro-symbolic layer is an <em>exact</em>, provenance-backed knowledge graph with a <em>deductive reasoner</em>. "Neuro-symbolic" = the neural model (fuzzy, fluent) working with a symbolic system (precise, logical), each covering the other's blind spot.</p>
+<h3>Why bother, given the LLM and RAG?</h3>
+<ol>
+  <li><strong>Be exact about structure.</strong> "Does <code>A</code> call <code>B</code>?" has a true/false answer. A statistical model guesses; a graph <em>knows</em>.</li>
+  <li><strong>Cite real provenance.</strong> Every symbolic fact carries the exact <code>file:line</code> it came from, so the model can relay a clickable citation.</li>
+  <li><strong>Reason multi-hop.</strong> "Does <code>A</code> transitively call <code>C</code> through something?" needs <em>chaining</em>. LLMs are unreliable at it; RAG cannot do it at all (its chunks don't contain the connecting hop). A deductive engine chains by construction.</li>
+</ol>
+<h3>The knowledge graph</h3>
+<p>A typed graph stored as three core tables:</p>
+<ul>
+  <li><strong>entities</strong> — nodes with a <code>kind</code> (<code>file | symbol | module | repo | convention | decision | bug</code>), a canonical <code>name</code>, a <code>path</code>, and a JSON <code>meta</code> blob.</li>
+  <li><strong>facts</strong> — edges as triples <em>(subject) —predicate→ (object)</em>. Predicates: <code>calls</code>, <code>imports</code>, <code>defined-in</code>, <code>depends-on</code>, <code>supersedes</code>, <code>convention-applies-to</code>, <code>decision-affects</code>. Each carries a <strong>confidence</strong> and a <strong>validity window</strong> (<code>valid_from</code>/<code>valid_to</code>).</li>
+  <li><strong>provenance</strong> — one-to-many <em>evidence</em> per fact (<code>source_kind</code>, <code>source_ref</code> like <code>pkg/module.py:142</code>); multiple sources <em>raise</em> confidence.</li>
+</ul>
+<p>Two design choices matter enormously:</p>
+<ul>
+  <li><strong>Deterministic backbone vs. fuzzy distillation.</strong> Facts from deterministic AST/regex parsers get <strong>confidence 1.0</strong>; facts <em>distilled by an LLM</em> from messy interaction logs get <strong>&lt; 1.0</strong>. You can always tell a proven fact from a guessed one.</li>
+  <li><strong>Temporal / soft-supersession.</strong> Facts are not hard-deleted on change; they get a <code>valid_to</code> timestamp, so the graph keeps history and you can query "what was true as of date D."</li>
+</ul>
+<h3>The "dream" loop — nightly consolidation</h3>
+<p>Borrowing from how sleep consolidates memory, a nightly cycle runs five stages:</p>
+<div class="diagram">
+  ingest ──▶ extract ──▶ reflect ──▶ synthesize ──▶ [retrain]
+  (raw       (facts       (dedup,      (reasoning-     (only if the
+   episodic   from code    resolve      grounded        eval gate
+   capture)   + distill    conflicts,   training        passes)
+              from logs)   raise conf)  samples)
+</div>
+<p>Raw interactions land in an episodes table; extraction turns them plus fresh code into facts; reflection deduplicates and resolves conflicts (bumping confidence when sources agree, superseding when they don't); synthesis produces reasoning-grounded training data; and — only if the eval gate passes — a retrain may run. Lineage tables record which cycles fed which weights, so a regression can be bisected.</p>
+<h3>The deductive reasoner — the intellectual core</h3>
+<p>A small, dependency-free, <strong>read-only</strong> backward-chaining engine over the graph. It derives <em>new</em> facts by transitive closure, each with a full proof trace. The rules are kept as <em>data</em>, Datalog-shaped and guaranteed to terminate:</p>
+<pre>reaches(A, B) :- calls(A, B).
+reaches(A, C) :- calls(A, B), reaches(B, C).      # transitive call closure
+depends(A, B) :- depends-on(A, B).
+depends(A, C) :- depends-on(A, B), depends(B, C).
+impacts(X, Y) :- reaches(Y, X).                    # reverse: what breaks if X changes</pre>
+<ul>
+  <li><strong>Proof traces.</strong> Every derivation carries its steps — each a real fact with its <code>fact_id</code> and <code>source_ref</code> — so a caller can re-verify the whole chain.</li>
+  <li><strong>Cycle-safe &amp; depth-bounded</strong> (BFS + a <code>seen</code> set; default max depth ~8) so evaluation always terminates on a cyclic call graph.</li>
+  <li><strong>Confidence = min-of-chain</strong> — a chain touching an LLM-distilled (&lt;1.0) fact is visibly less than 1.0; a deterministic-only chain stays 1.0.</li>
+  <li><strong>Primitives:</strong> <code>reaches</code>, <code>depends</code>, <code>trace_path(src, tgt)</code> (shortest proof), and <code>impacts(x)</code> (the reverse call-cone: everything that reaches <code>x</code> — i.e. what a change to <code>x</code> could break).</li>
+</ul>
+<h3>Imagination</h3>
+<p>"Imagination" is counterfactual reasoning built on <code>impacts</code>: an <code>imagine_impact("X")</code> tool answers "what breaks if I change X?" by framing the proven impact-cone as a hypothetical; and reasoning-chain <em>grounded synthesis</em> uses the reasoner to generate genuinely structural training data (not fact-echo), which then feeds the eval-gated retrain via a de-echoed multi-hop eval.</p>
+<div class="tip"><span class="lbl">The punchline (proven in Part V)</span> On multi-hop questions, the neuro-symbolic layer is the <em>only</em> configuration that can answer at all — <strong>39/40 vs 0/40</strong> for the bare fine-tune. Multi-hop reasoning is a capability the graph <em>adds</em>, not a metric the fine-tune slightly improves.</div>
+
+<h2>2.6 MCP — how tools reach the model</h2>
+<p><strong>MCP (Model Context Protocol)</strong> is the standard by which the harness discovers and calls external tools. Both memories are exposed as an MCP server whose tools split cleanly:</p>
+<table>
+  <tr><th>RAG tools (fuzzy recall)</th><th>Neuro-symbolic tools (exact + reasoning)</th></tr>
+  <tr><td><code>search_code</code>, <code>search_docs</code>, <code>search_changes</code>, <code>find_similar_bugs</code>, <code>get_change_diff</code></td><td><code>query_facts</code>, <code>explain_entity</code>, <code>trace_path</code>, <code>imagine_impact</code></td></tr>
+</table>
+<p>The agent decides when to call these; results are injected into its context, and a well-behaved model relays them with citations. Any OpenAI-compatible harness that speaks MCP can consume them.</p>
+</section>
+
+<!-- PART III -->
+<section class="part">
+<h1>Part III — Architecture &amp; code map</h1>
+
+<h2>3.1 The end-to-end pipeline</h2>
+<div class="diagram">
+   ┌─────────┐   ┌──────────┐   ┌───────────────┐   ┌──────────────┐
+   │  data/  │──▶│  train/  │──▶│    serve/     │◀──│   harness    │
+   └─────────┘   └──────────┘   └───────────────┘   └──────────────┘
+   src→JSONL     QLoRA/Unsloth   llama.cpp           bring-your-own
+   (path splits) →LoRA→GGUF       OpenAI-compat HTTP  (claw/aider/…)
+                                        ▲
+                                        │ the agent calls MCP tools ↓
+   ┌──────────────────────┐   ┌───────────────────┐   ┌──────────────────────┐
+   │       rag/           │   │  symbolic memory  │   │      reasoner        │
+   │ sources·extract·embed│   │ typed graph +     │   │ backward-chaining    │
+   │ ·store·retrieve      │   │ nightly "dream"   │   │ reaches/depends/     │
+   │                      │   │                   │   │ trace_path/impacts   │
+   └──────────────────────┘   └───────────────────┘   └──────────────────────┘
+              └──────────── servers/ exposes all of it over MCP ─────────────┘
+</div>
+<p>The four phases are locked in order and each hides behind an interface (ABC), so a phase can be reimplemented without touching the others. The lower boxes are the augmentation layers.</p>
+
+<h2>3.2 Package by package</h2>
+<p>The reference implementation lives under <code class="fileref">codescribe_train/</code>:</p>
+<table>
+  <tr><th>Package</th><th>Purpose</th></tr>
+  <tr><td><code>codescribe_train/data/</code></td><td>Any source tree (Git working tree, Perforce workspace, or plain directory) → train/val/test JSONL. Walks files, applies a YAML config, dedups, formats (FIM / document / diff-instruction), writes deterministic <strong>path-based</strong> splits.</td></tr>
+  <tr><td><code>codescribe_train/train/</code></td><td>QLoRA via Unsloth over the JSONL splits; eval; Q4_K_M GGUF export. The eval-gated retrain is the only weight-touching path. Strictly local.</td></tr>
+  <tr><td><code>codescribe_train/backends/</code> (serve)</td><td>Pluggable OpenAI-compatible inference layer. Default wraps vendored <code>llama.cpp</code>'s server; a remote backend exists only as a stub, never wired into a default.</td></tr>
+  <tr><td><code>codescribe_train/harness/</code></td><td>Adapter to whatever coding agent the operator picks; the harness is bring-your-own and treated as an opaque, low-trust subprocess.</td></tr>
+  <tr><td><code>codescribe_train/rag/</code></td><td>The RAG pipeline: <code>sources/</code> (code, docs, Perforce, Bugzilla), <code>extract/</code>, <code>embed/</code>, <code>store/</code> (sqlite-vec + FTS5 writer/retriever), and a CLI with <code>index</code> / <code>status</code> subcommands.</td></tr>
+  <tr><td><code>codescribe_train/servers/</code></td><td>MCP servers exposing both memories (search + facts + reasoning tools), plus a safe grep and doc lookup.</td></tr>
+  <tr><td><em>symbolic memory + reasoner</em></td><td>The typed knowledge graph, the nightly dream loop, and the deductive engine. Concepts + build plan are documented; this is the layer that wins the multi-hop eval.</td></tr>
+</table>
+
+<h2>3.3 The two data stores</h2>
+<p>Both stores are a single SQLite file each, built on the trainer and served on the serving box.</p>
+<h4>The knowledge graph</h4>
+<pre>entities(id, kind, name, repo, path, meta{json}, first_seen, last_seen)   UNIQUE(kind,name,repo)
+facts(id, subject→entities, predicate, object→entities | object_lit,
+      confidence, extractor, created_at, valid_from, valid_to)     -- valid_to NULL = currently true
+provenance(id, fact→facts, source_kind, source_ref, excerpt, created_at)  -- evidence, many per fact
+-- plus episodes (raw interaction stream) and lineage tables (which dream cycles fed which weights)
+-- indexes: (predicate, object, valid_to) "what calls/affects X"; (subject, predicate, valid_to) entity traversal</pre>
+<h4>The retrieval index</h4>
+<pre>code_chunks + code_chunk_vectors vec0[1024] + code_chunk_fts fts5(... content='code_chunks')  -- external-content!
+doc_chunks  + doc_chunk_vectors  + doc_chunk_fts
+bugs        + bug_vectors        + bug_fts          -- from Bugzilla
+changes     + change_vectors     + change_fts       -- from Perforce (+ chunked review discussion)
+state(key, value)  -- last-indexed markers</pre>
+<div class="note"><span class="lbl">Index lifecycle</span> Build to a temp path, verify counts + <em>freshness</em> (a staleness metric — how many indexed paths no longer exist), back up, then copy to the serving box over the LAN. The retrieval server opens the file per-session, so shipping a new index needs no restart. Shipping an index must never touch the served weights.</div>
+
+<h2>3.4 Configuration</h2>
+<p>Per-codebase behaviour is <strong>data, not code</strong>: YAML under <code class="fileref">configs/</code> (separate files for the data pipeline, RAG sources + embedder + chunking, the memory/dream cycle, and the retrain gate). Dependencies install <em>per phase</em> with uv extras (<span class="kbd">uv sync --extra data|train|backends|harness|rag</span>); Python 3.12; each extra pulls only its stack.</p>
+</section>
+
+<!-- PART IV -->
+<section class="part">
+<h1>Part IV — Infrastructure &amp; operations</h1>
+
+<h2>4.1 The two machine roles</h2>
+<p>The stack assumes two machines on a private LAN. Nothing reaches the cloud.</p>
+<table>
+  <tr><th></th><th>The trainer</th><th>The serving box</th></tr>
+  <tr><td>Role</td><td>fine-tunes, dreams, builds indices (idle most of the time)</td><td>always-on; serves the GGUF, hosts the indices the harness reads</td></tr>
+  <tr><td>GPU</td><td>a modern ~8&nbsp;GB card able to run the Unsloth QLoRA stack</td><td>any GPU that can serve a Q4_K_M 7B (older/cheaper is fine)</td></tr>
+  <tr><td>Notes</td><td>the <em>only</em> box that runs training; occasional, heavy</td><td>light, continuous; loopback bind + api-key</td></tr>
+</table>
+<p>The division is fixed: heavy/occasional work (train, index, dream) on the trainer; light, always-on serving on the serving box. Indices are built on the trainer and copied to the serving box over the LAN. The served weights are replaced only by an explicit, eval-gated deploy.</p>
+
+<h2>4.2 Runbooks</h2>
+<h4>Build / refresh the RAG index</h4>
+<pre>python -m codescribe_train.rag index      # re-embed code + incremental Perforce/Bugzilla
+python -m codescribe_train.rag status     # counts + STALENESS check (warns past a threshold)
+# verify staleness ~0%, then copy the index file to the serving box over the LAN</pre>
+<h4>Run the quality ablation (single-hop or multi-hop)</h4>
+<pre># two-process split so the embedder frees VRAM before the 7B loads (8 GB card):
+python -m codescribe_train.train.ablation precompute --tasks evals/&lt;suite&gt;.json --out /tmp/ctx.json …
+python -m codescribe_train.train.ablation run --tasks evals/&lt;suite&gt;.json --contexts /tmp/ctx.json \
+    --configs ft,ft_rag,ft_ns,ft_rag_ns --report logs/ablation.json</pre>
+<h4>Retrain (the only weight-touching path)</h4>
+<pre>python -m codescribe_train.train.retrain --config configs/retrain.yaml
+# assembles real+capped-synth → trains → BEAT-OR-DISCARD gate on a frozen synth-free eval → deploy+rollback</pre>
+
+<h2>4.3 The strictly-local posture in practice</h2>
+<ul>
+  <li><strong>Egress audit:</strong> re-run a full session under <code>strace -f -e trace=connect</code> after wiring anything new; assert zero non-loopback connects (your own LAN box excepted, named explicitly). A stubbed embedder hides the real model-load egress — drive a <em>real</em> load.</li>
+  <li><strong>Vendored trust:</strong> third-party binaries (the inference server, the harness) are SHA-pinned, never auto-updated, and verified through the binary's own <code>doctor</code>/config-dump ("loaded 0/N" means your config was rejected wholesale).</li>
+  <li><strong>Sandbox:</strong> in production the harness runs with no network (container <code>--network none</code>).</li>
+</ul>
+</section>
+
+<!-- PART V -->
+<section class="part">
+<h1>Part V — Evaluation: does each layer earn its place?</h1>
+<p class="lead">Evaluation answers, per axis, "should I turn this layer on for this job?" — and produced the stack's headline result.</p>
+
+<h2>5.1 Methodology</h2>
+<p>Evaluation is a <strong>capability × configuration matrix</strong>, not one number. Five configurations of the same served model, differing only in what context is injected (retrieve → prepend → complete):</p>
+<table>
+  <tr><th>Config</th><th>Fine-tune</th><th>RAG ctx</th><th>NS ctx</th><th>Isolates</th></tr>
+  <tr><td>base</td><td>✗ stock 7B</td><td>✗</td><td>✗</td><td>the floor</td></tr>
+  <tr><td>ft</td><td>✓</td><td>✗</td><td>✗</td><td>"LLM only"</td></tr>
+  <tr><td>ft_rag</td><td>✓</td><td>✓</td><td>✗</td><td>RAG's lift</td></tr>
+  <tr><td>ft_ns</td><td>✓</td><td>✗</td><td>✓</td><td>the symbolic lift</td></tr>
+  <tr><td>ft_rag_ns</td><td>✓</td><td>✓</td><td>✓</td><td>do they compose?</td></tr>
+</table>
+<p><strong>Metrics:</strong> structural accuracy (fraction of a task's expected signals present in the answer, <em>echo-stripped</em>), provenance precision (fraction of <code>path:NN</code> citations pointing to a real file with ≥NN lines), citation rate, hallucination/refusal, latency.</p>
+<div class="warn"><span class="lbl">Two threats you must always control</span> (1) <strong>Echo-inflated scoring</strong> — if the scorer counts signals already in the prompt, every config looks better and deltas shrink; token-slice the generated answer only, and assert the fix is active at runtime. (2) <strong>VRAM co-residency</strong> — the embedder and the 7B don't co-fit on 8&nbsp;GB, so precompute all retrieval/graph context in a process that <em>exits</em> before the model loads.</div>
+
+<h2>5.2 Single-hop results</h2>
+<p>56-task grounded structural suite (imports / defined-in / calls), fine-tune vs stock 7B:</p>
+<table>
+  <tr><th>config</th><th>structural</th><th>provenance</th><th>citation rate</th><th>hallucination</th><th>gen ms</th></tr>
+  <tr><td>base</td><td>0.537</td><td>1.000</td><td>0.018</td><td>0.000</td><td>2451</td></tr>
+  <tr><td>ft</td><td>0.590</td><td>0.867</td><td>0.232</td><td>0.000</td><td>2494</td></tr>
+  <tr><td>ft_rag</td><td>0.611</td><td>0.929</td><td>0.214</td><td>0.000</td><td>3238</td></tr>
+  <tr><td>ft_ns</td><td>0.623</td><td>0.941</td><td><strong>0.518</strong></td><td>0.000</td><td>2467</td></tr>
+  <tr><td>ft_rag_ns</td><td>0.624</td><td><strong>0.952</strong></td><td>0.375</td><td>0.000</td><td>3229</td></tr>
+</table>
+<p>Every layer lifts structural accuracy a little and they compose; every augmentation improves provenance. The symbolic layer's signature single-hop win is <strong>citation rate</strong> — handed exact <code>file:line</code> facts, the model volunteers a checkable citation 52% of the time (vs 23% ft, 2% base), at the best precision, for ~zero extra latency. RAG adds ~740&nbsp;ms.</p>
+<div class="note"><span class="lbl">A caveat that became a case study</span> The first run reported ft_rag provenance at 0.73 — <em>below</em> ft — and nearly shipped "RAG hurts provenance." It was an artifact: the indexer never pruned chunks for <em>deleted</em> files, so an incremental-on-stale-base rebuild left <strong>56% dead-path chunks</strong>; RAG cited files that no longer existed. Fix: a prune step + a staleness detector that warns ≥5%. Corrected number: 0.929. <em>An ablation is only as trustworthy as the quality of the systems it compares.</em></div>
+
+<h2>5.3 Multi-hop results — the neuro-symbolic win</h2>
+<p>40 transitive-call tasks: "does <code>A</code> transitively call <code>C</code>, through what?" The endpoints are in the prompt (they echo-strip away), so the <em>only</em> scorable signals are the <strong>intermediate</strong> function and a real <code>file:line</code> — exactly what a config must <em>chain</em> to produce. For the NS configs, the injected context is the reasoner's derivation.</p>
+<table>
+  <tr><th>config</th><th>structural</th><th>provenance</th><th>citation rate</th><th>named the intermediate</th><th>gen ms</th></tr>
+  <tr><td>ft</td><td>0.319</td><td>0.063</td><td>0.175</td><td><strong>0 / 40</strong></td><td>3176</td></tr>
+  <tr><td>ft_rag</td><td>0.244</td><td>0.000</td><td>0.000</td><td>1 / 40</td><td>2376</td></tr>
+  <tr><td>ft_ns</td><td><strong>0.938</strong></td><td><strong>0.813</strong></td><td><strong>0.925</strong></td><td><strong>39 / 40</strong></td><td>3179</td></tr>
+  <tr><td>ft_rag_ns</td><td>0.850</td><td>0.621</td><td>0.550</td><td>39 / 40</td><td>4182</td></tr>
+</table>
+<ol>
+  <li><strong>NS is the only config that can chain at all.</strong> Bare FT names the connecting intermediate <strong>0 / 40</strong>; FT+NS <strong>39 / 40</strong>. A capability the others structurally lack, not a metric they slightly improve.</li>
+  <li><strong>RAG doesn't just fail multi-hop — it mildly hurts.</strong> FT+RAG scores <em>below</em> bare FT and its citation rate collapses to 0: retrieved snippets sit around the endpoints but never contain the connecting hop, so they are noise for a structural question.</li>
+  <li><strong>NS alone beats NS+RAG here</strong> — the derivation is already the answer; adding chunks only distracts (and adds ~1&nbsp;s). On multi-hop, turn RAG <em>off</em>.</li>
+</ol>
+<div class="tip"><span class="lbl">The decision this supports</span> Read the matrix by column: <strong>fine-tune for fluency, RAG for freshness, the symbolic layer for provenance and multi-hop reasoning.</strong> Each pays for itself on its own axis — and RAG is actively wrong for reasoning. This is the empirical justification for building the neuro-symbolic layer at all.</div>
+</section>
+
+<!-- PART VI -->
+<section class="part">
+<h1>Part VI — Landmines: the traps that already bit</h1>
+<p class="lead">Each cost real debugging time. Internalise them before touching the matching subsystem.</p>
+
+<h3>1. The eval-echo scorer</h3>
+<p>The structural scorer originally counted signals present in the <em>echoed prompt</em>, not just the generated answer. Since ~40% of expected signals appear verbatim in their prompts, <strong>every historical gate score was inflated ~4–7 points</strong>. Fix: token-slice the answer only. Re-gate anything measured before the fix; treat old absolute scores with suspicion.</p>
+<h3>2. Editable install shadows PYTHONPATH</h3>
+<p>An editable install resolves imports to the install's target dir, not your <code>PYTHONPATH</code> or a sibling checkout — you can "fix" code and still run the old code. Always assert the fix is live (<code>inspect.getsource(fn)</code> contains your change; <code>module.__file__</code> points where you expect).</p>
+<h3>3. External-content FTS5 delete order</h3>
+<p>Delete FTS row → vector row → content row, in that order, or you corrupt search with ghost terms (see 2.4).</p>
+<h3>4. Stale index / no prune for deleted files</h3>
+<p>The indexer replaced a file's chunks in place but never dropped chunks for files <em>deleted</em> from the codebase. Rebuilding incrementally on a stale base accumulated dead-file chunks (hit 56%), silently poisoning retrieval and any eval using RAG. Fix: a prune step + a <code>status</code> staleness metric that warns ≥5%. Run <code>status</code> after every ship.</p>
+<h3>5. Nested-checkout indexing pollution</h3>
+<p>The source walkers indexed nested working-copy/worktree checkouts, so a large fraction of the index was duplicate. Fix: exclude the agent/worktree scratch directories in the walkers.</p>
+<h3>6. NS context for multi-hop must inject the derivation, not flat facts</h3>
+<p>The ablation's NS block originally dumped flat single-file facts. For a multi-hop task that forces the <em>model</em> to chain — the very thing it can't do — so FT+NS would have looked no better than FT (a false negative). Fix: inject the reasoner's <code>trace_path</code> derivation, parsed from the <em>prompt</em> (not the answer key). <em>General rule: for a reasoning eval, inject the reasoner's conclusion, not the raw facts it used.</em></p>
+<h3>7. Auto-generated evals need adversarial filters</h3>
+<p>The first multi-hop generator produced degenerate tasks: builtin-method "endpoints" (called everywhere, defined nowhere) and test-name-telegraphed intermediates. Fix: require endpoint + intermediate to be <code>defined-in</code> the codebase; reject telegraphed intermediates; prefer mid-frequency callees. Read your generated tasks and ask "how could this be answered the wrong way?"</p>
+<h3>8. Vendored-binary config schema</h3>
+<p>A stray key made a vendored binary reject its whole config ("loaded 0/N"), silently disabling a safety gate. When rendering config for a program you didn't write: confirm the discovery path, the schema (does it strict-reject unknown keys?), and end-to-end via the binary's own <code>doctor</code>/dump. A config read from source is necessary but not sufficient.</p>
+<div class="note"><span class="lbl">Meta-lesson</span> Prefer <strong>evidence over assertion</strong> everywhere: a reproduced bug over a suspected one, a verified swap over an assumed one, the binary's own report over a schema you read, a runtime assertion that your fixed code is the code running. Almost every landmine bit because a plausible-looking assumption went unchecked.</div>
+</section>
+
+<!-- PART VII -->
+<section class="part">
+<h1>Part VII — Current state &amp; roadmap</h1>
+<h3>Built and verified</h3>
+<ul>
+  <li>The four phases: data → train → serve → harness. End-to-end verified by egress audit (zero non-loopback connects).</li>
+  <li>RAG: sqlite-vec + FTS5 hybrid with RRF over code/docs/Bugzilla/Perforce; MCP tools; a staleness detector + prune; clean index shipped to the serving box.</li>
+  <li>Neuro-symbolic: the graph with provenance + temporal supersession; the dream loop; the deductive reasoner; imagination tools (<code>trace_path</code>, <code>imagine_impact</code>).</li>
+  <li>Eval-gated retrain with anti-collapse gates; a first real promotion of a fine-tune over the prior one.</li>
+  <li>Evaluation: the ablation harness + methodology + single-hop and multi-hop results.</li>
+</ul>
+<h3>The next major build</h3>
+<ul>
+  <li><strong>Grounded synthesis.</strong> Use the reasoner to generate genuinely structural (multi-hop, cross-file) training data — the "fundamentally different" synth that should actually teach structure — and feed it to the eval gate via a de-echoed multi-hop eval. This closes the loop: reasoning → better training data → better fine-tune → repeat, gated so it can't collapse.</li>
+  <li><strong>Semantic entity lookup</strong> (embedding the graph's entities) — deferred.</li>
+</ul>
+<h3>Where to point yourself first</h3>
+<ol>
+  <li>Read the overview and architecture concept docs (the curated entry points).</li>
+  <li>Skim the reasoner end-to-end — it's small and the intellectual core.</li>
+  <li>Run the test suite (GPU-free) to see the retrieve→inject→score loop concretely.</li>
+  <li>Reproduce a small ablation to watch each layer's contribution.</li>
+  <li>Read the lessons/landmines with full file:line context before touching a subsystem.</li>
+</ol>
+</section>
+
+<!-- APPENDICES -->
+<section class="part">
+<h1>Appendix A — Glossary</h1>
+<table>
+  <tr><th>Term</th><th>Meaning</th></tr>
+  <tr><td>QLoRA</td><td>Quantized Low-Rank Adaptation: fine-tune by learning small adapters over a 4-bit-quantized frozen base. Fits a 7B on 8&nbsp;GB.</td></tr>
+  <tr><td>LoRA adapter</td><td>the small trained delta (tens of MB) added to the frozen base; swappable across generations.</td></tr>
+  <tr><td>GGUF / Q4_K_M</td><td>the file format llama.cpp serves / its 4-bit quantization scheme.</td></tr>
+  <tr><td>FIM</td><td>Fill-In-the-Middle: a training format giving the model prefix+suffix to predict the middle.</td></tr>
+  <tr><td>RAG</td><td>Retrieval-Augmented Generation: retrieve external text at inference and prepend it to the prompt.</td></tr>
+  <tr><td>Embedding</td><td>a dense vector (1024-d here, from bge-large) placing semantically similar texts near each other.</td></tr>
+  <tr><td>sqlite-vec / vec0</td><td>SQLite extension + virtual-table type for storing vectors and doing KNN inside SQLite.</td></tr>
+  <tr><td>FTS5</td><td>SQLite full-text search (inverted index, BM25, stemming); the lexical half of hybrid retrieval.</td></tr>
+  <tr><td>RRF</td><td>Reciprocal Rank Fusion: merge ranked lists by Σ 1/(k+rank); scale-agnostic.</td></tr>
+  <tr><td>Neuro-symbolic (NS)</td><td>combining the neural model with a symbolic knowledge graph + logical reasoner.</td></tr>
+  <tr><td>Entity / Fact / Provenance</td><td>graph node / (subject-predicate-object) edge / the evidence (source_ref) backing a fact.</td></tr>
+  <tr><td>Backbone fact</td><td>a fact from a deterministic AST/regex extractor (confidence 1.0), vs. an LLM-distilled fuzzy fact (&lt;1.0).</td></tr>
+  <tr><td>Backward chaining</td><td>proving a goal by recursively proving its sub-goals; how the reasoner derives transitive facts.</td></tr>
+  <tr><td>Derivation / proof trace</td><td>a derived fact plus the ordered real facts (with file:line) that prove it.</td></tr>
+  <tr><td>impacts / imagine_impact</td><td>the reverse call-cone of X (everything that reaches X) = "what breaks if I change X".</td></tr>
+  <tr><td>Dream loop</td><td>the nightly ingest→extract→reflect→synthesize→[retrain] memory-consolidation cycle.</td></tr>
+  <tr><td>Model collapse</td><td>quality decay from training on model-generated data recursively; why retrain is eval-gated.</td></tr>
+  <tr><td>MCP</td><td>Model Context Protocol: how the agent discovers and calls tools (the memories are an MCP server).</td></tr>
+  <tr><td>Echo-stripping</td><td>scoring only signals the model <em>generated</em>, not ones echoed from the prompt.</td></tr>
+  <tr><td>Ablation</td><td>turning layers on/off to measure each one's contribution per metric.</td></tr>
+</table>
+
+<h1 style="margin-top:22pt">Appendix B — Package &amp; command index</h1>
+<h4>Reference-implementation layout</h4>
+<pre>codescribe_train/data/        source tree → JSONL splits (FIM/document/diff)
+codescribe_train/train/       QLoRA/Unsloth training, eval, GGUF export, eval-gated retrain, ablation
+codescribe_train/backends/    inference backends (default: vendored llama.cpp server)
+codescribe_train/harness/     bring-your-own coding-agent adapter
+codescribe_train/rag/         sqlite-vec + FTS5 index: sources/extract/embed/store/retrieve, `index`/`status` CLI
+codescribe_train/servers/     the MCP servers (search + facts + reasoning tools)
+configs/                      per-codebase behaviour (data, rag, memory/dream, retrain)
+evals/                        the structural + multi-hop task suites
+docs/                         the concept + runbook + lessons documentation tree</pre>
+<h4>Commands</h4>
+<pre>uv sync --extra rag|train|data|harness|backends    per-phase deps (Python 3.12)
+python -m pytest tests/ -q                          the test suite (GPU-free)
+python -m codescribe_train.rag index|status         build / check the RAG index
+python -m codescribe_train.train.ablation …         the quality matrix
+strace -f -e trace=connect …                        the egress audit (expect zero non-loopback)</pre>
+<p class="small" style="margin-top:14pt">This handbook is the reading-order narrative that threads the concept docs together for someone starting cold. It names no specific codebase, host, or operator — it is the teachable version of the stack. Regenerate it whenever the design moves enough that the details drift.</p>
+</section>
+
+</body>
+</html>
