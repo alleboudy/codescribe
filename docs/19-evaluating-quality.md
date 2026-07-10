@@ -97,7 +97,7 @@ What it says:
 3. **The symbolic layer's distinctive win is citation *rate*.** FT+NS cites a source in **52%** of answers (vs 23% FT, 21% RAG, 2% base). Handed exact facts with exact `file:line`, the model volunteers a checkable citation far more often — it answers *and shows its work*. RAG matches precision *when it cites*, but cites less often.
 4. **NS is nearly free; RAG is not.** FT+NS latency ≈ FT; FT+RAG adds ~740 ms. On quality-per-latency, the symbolic layer is the bargain.
 
-(No hallucination in any config; single-hop only — the multi-hop suite, where the symbolic layer should be the *only* config that can answer at all, is the next measurement.)
+(No hallucination in any config. This is the single-hop matrix; the multi-hop suite — where the symbolic layer should be the *only* config that can answer at all — is measured in §8.2.)
 
 ### 8.1 A caveat that became a case study: a stale index poisoned this result
 
@@ -109,6 +109,32 @@ The first run of this ablation reported FT+RAG provenance at **0.73** — *below
 - **Fix + verification:** a prune step (a full re-index now drops removed files) plus a **staleness detector** in the index-status command (warns when too many chunks point at deleted files). Applying it took staleness 56% → 0% and recovered FT+RAG provenance to **0.929** — the corrected number above.
 
 **The meta-lesson:** *an ablation is only as trustworthy as the quality of the systems it compares.* A stale index made RAG look worse than it is. Control for it — the detector below is that control — and re-measure a surprising result before believing it. (This is [`16 § 4`](16-lessons-and-fixes.md)'s worktree-pollution lesson's cousin: source-index hygiene silently poisons everything downstream.)
+
+### 8.2 The multi-hop result: the symbolic layer's outright win
+
+The multi-hop suite (§5) — 40 tasks, each asking whether one function *transitively* calls another and to name an intermediate on the path with a real `file:line`, authored by the reasoner over the real graph. The two endpoints are in the prompt (so they echo-strip away); the only scorable signals are the **intermediate** and the **source file** — precisely what a config must *chain* to produce. For the symbolic configs the injected context is the reasoner's derivation (the path + every hop's provenance), and all 40 tasks received one. Same fine-tune, same echo-fixed scorer.
+
+| config | structural `task_mean` | provenance precision | citation rate | mean gen ms |
+|---|---|---|---|---|
+| **FT** (fine-tune only) | 0.319 | 0.063 | 0.175 | 3176 |
+| **FT+RAG** | 0.244 | 0.000 | 0.000 | 2376 |
+| **FT+NS** | **0.938** | **0.813** | **0.925** | 3179 |
+| **FT+RAG+NS** | 0.850 | 0.621 | 0.550 | 4182 |
+
+The headline is the **named-the-intermediate rate** — did the answer contain the connecting function that only chaining reveals:
+
+| config | named the intermediate |
+|---|---|
+| FT | **0 / 40** |
+| FT+RAG | 1 / 40 |
+| FT+NS | **39 / 40** |
+| FT+RAG+NS | 39 / 40 |
+
+1. **The symbolic layer is the *only* config that answers multi-hop at all.** Bare FT names the connecting intermediate **0 times in 40**; FT+NS **39 times in 40**. This is not a lift but a capability the others structurally lack: the fine-tune's weights hold no reliable transitive-call knowledge, and no prompting recovers a hop never learned. Handed the reasoner's derivation, the model relays it (0.94 structural, 0.93 citation).
+2. **RAG doesn't merely fail multi-hop — it mildly *hurts*.** FT+RAG lands *below* bare FT (0.244 vs 0.319) and its citation rate collapses to **0**. Retrieved snippets sit around the endpoints; they never contain the connecting hop (it lives in another function), so they add noise to a structural question and crowd out the citation bare FT would sometimes attempt. The honest converse of RAG's freshness value: for *reasoning*, retrieval is the wrong instrument.
+3. **The symbolic layer alone beats it combined with RAG.** Adding retrieved chunks on top of the clean derivation drops provenance (0.81 → 0.62) and citation rate (0.93 → 0.55) and adds latency — the derivation already *is* the answer; the chunks only distract. On multi-hop, turn retrieval off.
+
+This is the axis §6 predicted the symbolic layer would own outright, and it does: **multi-hop reasoning is a capability, not a metric delta** — present with the symbolic layer, absent without it. It is the strongest single reason the layer earns its place alongside the fine-tune and RAG.
 
 ## 9. What to take from this
 
