@@ -48,6 +48,8 @@ Both the vector index (`rag.db`) and the memory graph (`memory.db`) are **built 
 
 Leave the serving model itself alone — shipping an index must never touch the served weights.
 
+**Know when a rebuild is due — don't wait to notice bad answers.** The failure mode of [`16 § 4b`](16-lessons-and-fixes.md) — an index full of chunks for files deleted from the repo — is invisible until it silently degrades retrieval (and any eval that compares against RAG). Instrument it: the index-status command should report a **staleness metric** — of the distinct indexed file_paths, how many no longer exist under the repo root — and **warn past a threshold** (~5% is ordinary churn; 50%+ means an incremental rebuild landed on a stale base). Run `status` after every ship and on a schedule; when it warns, do Runbook D or a clean rebuild. This is the detection half of the correction; the prune (self-healing full re-index) is the other half.
+
 ---
 
 ## Runbook D — Purging index pollution without a full rebuild

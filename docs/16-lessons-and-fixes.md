@@ -44,6 +44,16 @@ conn.execute("INSERT INTO issue_fts(rowid, title, body) VALUES (?, ?, ?)", (n, t
 
 **Rule.** A repo that self-hosts agent worktrees silently doubles every index that walks the tree. Exclude agent scratch dirs, and validate provenance paths against a *real* build, not a toy fixture — a toy fixture never has a nested worktree.
 
+### 4b. An incremental re-index never prunes chunks for *deleted* files
+
+**Trap.** The code indexer replaces a file's chunks in place (delete-by-`file_path`, re-insert) on every run — but it has no step that removes chunks for files that were **deleted from the repo**. So an incremental re-index *accumulates* stale chunks: every file removed since the base index still has entries pointing at its now-dead path. Rebuild incrementally on top of an old base and the rot compounds. Measured on a real index that had been rebuilt this way: **56% of chunk file_paths no longer existed in the repo.** Retrieval then serves chunks from deleted files, and the model faithfully cites their dead `file:line` — silently degrading provenance (this is what made RAG look like it *hurt* provenance in [`19 § 8.1`](19-evaluating-quality.md) until it was root-caused).
+
+**Fix (remedy).** After a *full* code re-index (the code source is re-walked in full every run, so you have the current file set in hand), prune any chunk whose `file_path` is not in the current set — deleting its vec0 + external-content FTS5 mirrors in the [§1](#1-external-content-fts5-ghosts-old-terms-on-re-upsert) delete-first order. Now every re-index self-heals. Applying it to the polluted index took staleness 56% → 0% and recovered the RAG provenance metric from 0.73 to 0.93.
+
+**Detection (correction mechanism).** Don't wait to *notice* degraded answers — instrument it. Add a **staleness check** to the index-status command: for each distinct indexed `file_path`, does the file still exist under the repo root? Report `stale / total` and **warn past a threshold** (≈5% is ordinary churn; the pathology above was 56%). That single line ("*N% of the code index points at deleted files — re-index or rebuild*") is the signal that tells an operator a rebuild is due *before* it poisons retrieval — and, downstream, before it poisons an eval that compares against RAG.
+
+**Rule.** A "replace-in-place" index silently rots when files are deleted unless something prunes removed entries; make every full re-index self-prune, **and** surface a staleness metric so you can *detect* the need for a rebuild instead of discovering it in a degraded metric. Prefer a clean rebuild over an incremental one on top of a stale base.
+
 ---
 
 ## Eval layer
