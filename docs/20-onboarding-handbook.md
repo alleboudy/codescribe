@@ -2,6 +2,8 @@
 
 A new engineer taking over this stack — or you, six months later — needs one thing the scattered concept docs don't give on their own: a **single narrative document** that walks the whole system from first principles to current state, in reading order, as a PDF you can annotate on a couch away from the machine. This doc is the runbook for producing that handbook **entirely offline**, with tools already on the box.
 
+> **A rendered example is committed here:** [`handbook/codescribe-developer-handbook.pdf`](handbook/codescribe-developer-handbook.pdf) — a ~26-page handbook built from this very docs tree, with its regenerable source alongside ([`handbook/codescribe-developer-handbook.html`](handbook/codescribe-developer-handbook.html)). It is the concrete output of the pipeline described below.
+
 It matters that it is offline. The strictly-local posture ([`01-overview.md`](01-overview.md)) rules out the obvious routes — Google Docs, a hosted Markdown-to-PDF service, any cloud converter — because the handbook, by its nature, quotes internal architecture and (in the private original) infrastructure. The document that explains your private codebase must not be produced by uploading a description of your private codebase. So render it locally.
 
 ---
