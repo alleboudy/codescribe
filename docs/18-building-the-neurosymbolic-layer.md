@@ -164,6 +164,8 @@ Wire the core to the harness: `trace_path` and `imagine_impact` MCP tools ([`15 
 
 ## R3 / R4 — Imagination synthesis *(feeds the gated P4)*
 
+> **Status: built and measured.** In the reference deployment these two generators produced 750 grounded examples (0 ungrounded, 4.5× the diversity of fact-echo), and a fine-tune trained on them beats the baseline on both eval suites — the first synthetic source that *helps*. Results: [`19 § 8.3`](19-evaluating-quality.md). The design below is what that build followed.
+
 Add two generators to the P3 synthesis stage: **reasoning-chain** (multi-hop derivations narrated with the proof trace as provenance) and **counterfactual** (a hypothesised change + its deductively-true impact cone). Grounding is *stronger* than fact-echo: an example is admissible only if every proof step resolves to a current provenance-backed fact **and** the derivation type-checks (the symbolic verifier); the model only paraphrases, under the same clamps. Build a **multi-hop structural eval** to judge them ([`15 § 6`](15-deductive-reasoning-and-imagination.md)) — never the substring gate. Record the generator mix in `model_lineage`.
 
 **Definition of Done**
