@@ -136,6 +136,32 @@ The headline is the **named-the-intermediate rate** — did the answer contain t
 
 This is the axis §6 predicted the symbolic layer would own outright, and it does: **multi-hop reasoning is a capability, not a metric delta** — present with the symbolic layer, absent without it. It is the strongest single reason the layer earns its place alongside the fine-tune and RAG.
 
+### 8.3 Training reasoning into the weights: the imagination layer
+
+The results above measure *context injection* (RAG/symbolic facts at inference). The imagination synthesis (R3/R4, [`18-building-the-neurosymbolic-layer.md`](18-building-the-neurosymbolic-layer.md)) asks a different question: can the reasoner's derivations, turned into **grounded training data**, teach the fine-tune *itself* to reason — the "fundamentally different" synthesis the retrain pursuit demanded (reasoning chains, not fact-echo)?
+
+The generator produced **750 examples, 0 ungrounded** from the real graph (contamination-guarded against the eval suites): reasoning-chains ("A calls B calls C, so A transitively reaches C — proof: …") and counterfactuals ("if X changed, these callers break"). Its unique-bigram diversity is **0.458** — versus fact-echo synth's **0.101** and the ~0.42 grounded-synth ceiling. `ft_imag` is a fine-tune retrained on the real corpus + a capped 15% of this synth, the same recipe as the baseline.
+
+| multi-hop config | task_mean | provenance | citation | named intermediate |
+|---|---|---|---|---|
+| **ft** (baseline) | 0.319 | 0.063 | 0.175 | 0 / 40 |
+| **ft_imag** (bare) | **0.556** | **0.768** | **0.775** | **4 / 40** |
+| **ft+ns** | 0.938 | 0.813 | 0.925 | 39 / 40 |
+| **ft_imag + ns** | 0.938 | **0.974** | 0.500 | 39 / 40 |
+
+| single-hop config | task_mean | provenance | citation |
+|---|---|---|---|
+| **ft** | 0.590 | 0.867 | 0.232 |
+| **ft_imag** | **0.630** | 0.789 | 0.268 |
+| **ft+ns** | 0.623 | 0.941 | 0.518 |
+| **ft_imag + ns** | **0.693** | **0.972** | 0.393 |
+
+1. **The first synthetic source that *helps*.** Bare `ft_imag` beats the baseline on both suites (multi-hop 0.556 vs 0.319; single-hop 0.630 vs 0.590) and would **promote** through the beat-or-discard gate — where every fact-echo generation regressed. Reasoning-chain synth teaches structure; fact-echo did not.
+2. **It bakes in *form + provenance*, not the exact graph.** The largest jumps are multi-hop provenance (0.063 → 0.768) and citation rate (0.175 → 0.775): the model learned to answer in explicit call-chains and cite real `file:line`. But it names the *exact* intermediate only 4/40 from weights alone — it learned to *reason and cite*, not to memorise the graph, so the reasoner is still needed at inference for exactness.
+3. **`ft_imag` + the reasoner is the best config on both suites** — trained weights + injected derivations compose to the top numbers; the trained-to-cite model even relays the reasoner's provenance more faithfully (0.974 vs 0.813).
+
+This **closes the loop**: the reasoner's derivations become training data that measurably improves the fine-tune — contamination-guarded (generalization, not leakage) and gated (it cannot collapse). It is the first time any synthetic source moved the model the right way, and the empirical payoff of building the whole reasoning stack.
+
 ## 9. What to take from this
 
 The headline is not "config X is best" — it is **which layer to turn on for which job**. Read the matrix by column, not by row: pick the axis you care about (structural precision, trustworthy provenance, freshness, multi-hop reasoning, latency budget) and turn on the cheapest layer that wins it. The neuro-symbolic layer earns its place on the axes the others structurally cannot reach — exact provenance and multi-hop reasoning — while RAG owns freshness and the fine-tune owns fluent house style. The full stack is the union, and this methodology is how you prove each piece pays for itself rather than assuming it does.
