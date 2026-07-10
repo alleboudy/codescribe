@@ -78,26 +78,37 @@ A real run of this ablation — the fine-tune vs the stock 7B base, on a ~50-tas
 |---|---|---|---|---|---|
 | **Base** (stock 7B) | 0.537 | 1.000 | 0.018 | 0.000 | 2451 |
 | **FT** (fine-tune only) | 0.590 | 0.867 | 0.232 | 0.000 | 2494 |
-| **FT+RAG** | 0.610 | 0.727 | 0.196 | 0.000 | 3034 |
-| **FT+NS** | 0.623 | **0.941** | **0.518** | 0.000 | 2467 |
-| **FT+RAG+NS** | **0.633** | 0.864 | 0.393 | 0.000 | 2745 |
+| **FT+RAG** | 0.611 | 0.929 | 0.214 | 0.000 | 3238 |
+| **FT+NS** | 0.623 | 0.941 | **0.518** | 0.000 | 2467 |
+| **FT+RAG+NS** | 0.624 | **0.952** | 0.375 | 0.000 | 3229 |
 
 Lift over the fine-tune (the real "should I turn this on?" number):
 
 | | Δ structural | Δ provenance | Δ citation rate | Δ latency |
 |---|---|---|---|---|
-| +RAG | +0.020 | **−0.140** | −0.036 | +540 ms |
-| +NS | +0.033 | **+0.074** | **+0.286** | −27 ms |
-| +RAG+NS | +0.044 | −0.003 | +0.161 | +251 ms |
+| +RAG | +0.021 | +0.062 | −0.018 | +744 ms |
+| +NS | +0.033 | +0.074 | **+0.286** | −27 ms |
+| +RAG+NS | +0.034 | **+0.085** | +0.143 | +735 ms |
 
-What it says (four findings, one of them a surprise):
+What it says:
 
-1. **Every layer lifts structural accuracy, and they compose.** Base → FT is worth ~+5 points; each augmentation adds a bit more (NS > RAG), and the full stack is best. Modest, because the base already knows generic structure and the suite is small — but consistent.
-2. **Provenance is where the symbolic layer earns its place, decisively.** FT+NS cites a real source in **52%** of answers (vs 23% for the bare fine-tune, 2% for base) *and* at the best precision (0.94). Handed real facts with real `file:line`, the model relays and cites them. This is the axis the others structurally can't reach — the killer feature for a user who needs "…and where is that?"
-3. **RAG *hurts* provenance — the hypothesis that flipped.** We predicted RAG would *lift* provenance (it saw a real chunk). It did the opposite (precision 0.73, down from 0.87): retrieved chunks tempt the model into confident-but-misattributed line numbers. RAG helps recall and freshness — its real jobs — but should **not** be trusted for provenance; the symbolic layer should own that.
-4. **NS is nearly free; RAG is not.** FT+NS latency ≈ FT (a graph query is sub-millisecond); FT+RAG adds ~540 ms. On quality-per-latency, the symbolic layer is the bargain.
+1. **Every layer lifts structural accuracy, and they compose.** Base → FT is worth ~+5 points; each augmentation adds a bit more; NS and the full stack lead. Modest (the base already knows generic structure, the suite is small) but consistent.
+2. **Every augmentation *improves* provenance, and the combination is best (0.95).** Grounding the model in real context — retrieved chunks *or* graph facts — makes its citations more accurate. NS and RAG reach a similar precision (0.94 / 0.93); combined is best.
+3. **The symbolic layer's distinctive win is citation *rate*.** FT+NS cites a source in **52%** of answers (vs 23% FT, 21% RAG, 2% base). Handed exact facts with exact `file:line`, the model volunteers a checkable citation far more often — it answers *and shows its work*. RAG matches precision *when it cites*, but cites less often.
+4. **NS is nearly free; RAG is not.** FT+NS latency ≈ FT; FT+RAG adds ~740 ms. On quality-per-latency, the symbolic layer is the bargain.
 
-(No hallucination appeared in any config; and this is single-hop only — the multi-hop suite, where the symbolic layer should be the *only* config that can answer at all, is the strongest expected win and is left as the next measurement.)
+(No hallucination in any config; single-hop only — the multi-hop suite, where the symbolic layer should be the *only* config that can answer at all, is the next measurement.)
+
+### 8.1 A caveat that became a case study: a stale index poisoned this result
+
+The first run of this ablation reported FT+RAG provenance at **0.73** — *below* the bare fine-tune — and nearly shipped the conclusion "RAG hurts provenance." That was **wrong**, and root-causing it is the most useful thing in this doc.
+
+- **Symptom:** 27% of FT+RAG citations pointed at a `file:line` that *didn't exist* — not a wrong line in a real file, the *files themselves* were gone.
+- **Evidence (model-free, minutes):** **56% of the RAG index's chunk file_paths no longer existed in the repo**, while the eval suite was 96% aligned with current code. RAG was retrieving chunks from *deleted files* and the model faithfully cited their dead paths.
+- **Root cause:** the code indexer replaced a file's chunks in place but **never dropped chunks for files deleted from the repo**. The index had been rebuilt *incrementally on top of a stale base* rather than cleanly, so every file removed over months still had chunks.
+- **Fix + verification:** a prune step (a full re-index now drops removed files) plus a **staleness detector** in the index-status command (warns when too many chunks point at deleted files). Applying it took staleness 56% → 0% and recovered FT+RAG provenance to **0.929** — the corrected number above.
+
+**The meta-lesson:** *an ablation is only as trustworthy as the quality of the systems it compares.* A stale index made RAG look worse than it is. Control for it — the detector below is that control — and re-measure a surprising result before believing it. (This is [`16 § 4`](16-lessons-and-fixes.md)'s worktree-pollution lesson's cousin: source-index hygiene silently poisons everything downstream.)
 
 ## 9. What to take from this
 
