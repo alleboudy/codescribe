@@ -120,7 +120,7 @@ url = "https://download.pytorch.org/whl/cu128"
 Laptop GPUs throttle aggressively when:
 - On battery (TGP drops from 75 W to 30 W → ~3× slower).
 - Hot (the cooling can't sustain 75 W indefinitely; throttles to whatever the chassis dissipates).
-- The OEM has set conservative defaults (a "balanced" OEM thermal profile can halve performance versus the maximum one).
+- The OEM has set conservative defaults (a "balanced" thermal profile can halve performance versus the maximum one).
 
 For training:
 - **Always on AC**, ideally 130 W+ USB-C PD or barrel-jack.
