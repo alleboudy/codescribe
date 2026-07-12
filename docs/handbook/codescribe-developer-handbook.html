@@ -93,6 +93,7 @@
         <li>3.2 Package by package</li>
         <li>3.3 The two data stores</li>
         <li>3.4 Configuration</li>
+        <li>3.5 Skill selection at scale (target architecture)</li>
       </ol>
     </li>
     <li>Part IV — Infrastructure &amp; operations
@@ -341,6 +342,23 @@ state(key, value)  -- last-indexed markers</pre>
 
 <h2>3.4 Configuration</h2>
 <p>Per-codebase behaviour is <strong>data, not code</strong>: YAML under <code class="fileref">configs/</code> (separate files for the data pipeline, RAG sources + embedder + chunking, the memory/dream cycle, and the retrain gate). Dependencies install <em>per phase</em> with uv extras (<span class="kbd">uv sync --extra data|train|backends|harness|rag</span>); Python 3.12; each extra pulls only its stack.</p>
+
+<h2>3.5 Skill selection at scale (target architecture)</h2>
+<p>A <em>skill</em> is a small named procedure a harness loads on demand — a <code>SKILL.md</code> (frontmatter <code>name</code> + <code>description</code>, body = a recipe) discovered from <code>.claude/skills/</code> in the working directory and its ancestors. Its body enters context only when invoked, so <strong>skills cost zero standing context</strong>: ten on the path or ten thousand is the same until one is called. "Too many skills" is therefore never a context problem — the problem at scale is <em>selection</em>: which of thousands of plugin-contributed skills to surface for a task, without showing the model a menu that would not fit.</p>
+<p>The capability climbs three tiers as a corpus grows — <strong>inject the menu</strong> (≤ tens) → <strong>lexical BM25 selector</strong> (≤ hundreds; no embedder, no store) → <strong>hybrid retrieval + a plugin registry + a trust/egress gate</strong> (thousands, many plugins) — all behind one stable seam, <code>select(task, k) → [descriptor]</code>, so climbing a tier swaps internals without touching callers. The at-scale design is six layers:</p>
+<div class="diagram">
+  registry   aggregate every plugin's skills → one namespaced catalog
+             (+ provenance · trust tier · egress class)
+  index      descriptions in their OWN sqlite-vec + FTS5 collection, isolated
+             from the code index (§3.3); hybrid BM25 → vector rerank
+  scoping    pre-filter by active plugins · cwd/ancestors · posture
+  selection  top-K → scoped menu; operator /skills (primary) or a
+             skill_search tool (model mode, capable models only)
+  loading    lazy: only the INVOKED skill's body enters context
+  gate       strictly-local hides network-egress skills; low-trust plugins
+             quarantined; incremental, ghost-free (§16) refresh
+</div>
+<p>Isolating the skill <em>index</em> (while optionally sharing the embedder as a library) keeps skill work in its own failure domain — it can never corrupt the code index or an evaluated retrieval matrix. This is the <strong>main build target</strong> for the skills layer; the full treatment, with the canonical build order and the "don't stand up a second vector RAG" reasoning, is <code class="fileref">docs/21-skill-selection.md</code>.</p>
 </section>
 
 <!-- PART IV -->
@@ -490,6 +508,7 @@ python -m codescribe_train.train.ablation run --tasks evals/&lt;suite&gt;.json -
 <ul>
   <li><strong>Promote the imagination-trained model through the gated retrain and iterate.</strong> The synth is proven to lift the model (§5.4); run it through the production eval gate, ship it, and repeat the reasoning → synth → retrain cycle — recording the generator mix in the model lineage so any regression bisects to the imagination kind.</li>
   <li><strong>Semantic entity lookup</strong> (embedding the graph's entities) — deferred.</li>
+  <li><strong>Skill selection at scale (§3.5).</strong> A lexical BM25 selector is the small-corpus tier; the six-layer target — a plugin skill registry, hybrid retrieval in an <em>isolated</em> index, cwd/plugin scoping, and a trust/egress gate — is the main build target for driving this stack on a large, multi-plugin codebase. Full design + canonical build order: <code class="fileref">docs/21-skill-selection.md</code>.</li>
 </ul>
 <h3>Where to point yourself first</h3>
 <ol>
@@ -536,6 +555,7 @@ codescribe_train/backends/    inference backends (default: vendored llama.cpp se
 codescribe_train/harness/     bring-your-own coding-agent adapter
 codescribe_train/rag/         sqlite-vec + FTS5 index: sources/extract/embed/store/retrieve, `index`/`status` CLI
 codescribe_train/servers/     the MCP servers (search + facts + reasoning tools)
+codescribe_train/skills/      (target) skill registry + BM25 select(task,k) + skill_search MCP tool  [§3.5, docs/21]
 configs/                      per-codebase behaviour (data, rag, memory/dream, retrain)
 evals/                        the structural + multi-hop task suites
 docs/                         the concept + runbook + lessons documentation tree</pre>
