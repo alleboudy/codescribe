@@ -176,6 +176,28 @@ The stale-index case study (§8.1) caught one artifact and the result shipped. W
 
 **The meta-lesson, sharpened from §8.1:** a comparative eval is a measurement of the *whole* pipeline — retrieval emptiness, injection truncation, metric format-bias, and suite polarity are all invisible in a score table. Dump what each arm actually received; read your scorer against real answers; check your suite's answer distribution. And when a rebuild for the re-measurement doubles your index, diff its *composition* before blaming the first plausible directory — the audit's own first pollution diagnosis was wrong (the real culprit was nested git checkouts under a novel name, pruned for good by walking with a "contains `.git`" check instead of a name list).
 
+### 8.5 The full lattice: does each layer need the fine-tune?
+
+§2's optional cells (`base_rag`, `base_ns`, `base_rag_ns`) sat unmeasured until the audit forced the question "what is the fine-tune actually buying?" Measuring them costs little — the injected context blocks are *model-independent*, so the base family reuses the ft family's exact injections. `task_mean` (fixed pipeline; the de-echoed v2 suite splits positives/negatives):
+
+| config | single-hop | multi-hop | v2 positives |
+|---|---|---|---|
+| base | 0.537 | 0.206 | 0.017 |
+| base_rag | **0.736** | 0.194 | 0.067 |
+| base_ns | 0.641 | 0.856 | **0.975** |
+| ft | 0.590 | 0.319 | 0.075 |
+| ft_rag | 0.700 | 0.256 | 0.075 |
+| ft_ns | 0.623 | **0.938** | 0.950 |
+
+Four findings, each of which changes a default assumption:
+
+1. **The symbolic layer is model-independent.** The *stock* model relays an injected derivation at 0.856–0.975 — on the honest de-echoed suite, *every* NS-carrying config clusters at 0.95–0.975 regardless of model or retrieval, while every non-NS config sits at 0.02–0.08. Total layer separation: the reasoner is the capability, the model is a mouthpiece. It even teaches *citing* by example — the stock model's citation rate jumps 0.05 → 0.93 with derivations in context.
+2. **Retrieval's anchoring harm on reasoning is model-independent too** (base_rag < base, mirroring ft_rag < ft). It's a property of retrieve-then-read at small-model scale, not of any particular fine-tune.
+3. **Fixed retrieval helps the stock model *more* than the fine-tuned one on lookup** — base_rag posts the best single-hop cell measured (0.736 > ft_rag's 0.700). A model with no baked-in opinions about the codebase reads the retrieved context with less interference.
+4. **The generic-corpus fine-tune is the weakest of the three layers on structural axes**: ~+0.05 bare, ~nothing under augmentation. Its real case is fluency, house conventions, and completion styles these suites don't measure — and *targeted* training: the reasoning-chain synthesis retrain lifted bare multi-hop +0.24 where the generic corpus managed +0.11. **What you train on matters more than that you train.**
+
+The strategic consequence: budget effort as symbolic layer ≥ retrieval quality > generic retrains — and let retrains earn their place through targeted capability synthesis, gated by the eval.
+
 **And the re-measurement, which settles the question both ways.** With all five gaps fixed and the index rebuilt clean, the RAG rows were re-run. Single-hop: FT+RAG structural **0.611 → 0.700** — the lift over the bare fine-tune (+0.11) now *clears* the 5-point turn-on bar it previously missed, and citation rate doubles to 0.446 (the model can finally cite `path:NN` from a RAG block, because the blocks finally carry line spans); valid-citations-per-answer (rate × precision — the only citation number comparable across extractor versions) rises **+71%**. Multi-hop: FT+RAG **0.256 — still below bare FT's 0.319.** With retrieval, packing, spans, and the metric all repaired, the remaining deficit is *representational*: the model anchors on plausible-adjacent chunks and cannot join them, which is precisely the capability the symbolic layer supplies. Both headline decisions survive, each in a stronger form: **turn RAG on for single-hop lookup (it now earns it), and off for reasoning (its failure is intrinsic, not an implementation accident).** The combined config also recovered to tie FT+NS on multi-hop structure (0.938) at extra latency — the old "RAG degrades the symbolic layer" was partly broken-RAG noise.
 
 ## 9. What to take from this
