@@ -28,6 +28,14 @@ conn.execute("INSERT INTO issue_fts(rowid, title, body) VALUES (?, ?, ?)", (n, t
 
 **Rule.** Never hand user text to a query grammar unescaped. A silent degrade (one retrieval arm quietly dying) is worse than a loud error — you won't notice the quality loss.
 
+### 2b. …and the sanitiser's implicit-AND kills it a second way
+
+**Trap.** The §2 fix quotes every token and joins with a space — FTS5's implicit AND. Safe against the grammar, but a *question-shaped* query ("does `mint_token` transitively call `hash_secret`? Answer yes or no and cite a file:line.") now demands one chunk containing **every** English token. Probed against a production code index: **zero BM25 rows for 100% of two eval suites' prompts** — hybrid retrieval had silently been vector-only all along, again. For multi-hop endpoint pairs the AND is *structurally* unsatisfiable: A+B share a chunk and B+C share a chunk, but A+C never do.
+
+**Fix.** Keep the AND query first (precise when it hits); when it matches **nothing**, retry the same sanitised phrases joined with `OR` — BM25 ranks best-first, so a chunk matching any strong token (an identifier, a path) surfaces and the weak English tokens just don't help.
+
+**Rule.** After you make a query *safe*, check it can still *match*: run your real query corpus against the index and alarm on a 0-row rate. Both §2 failures were silent for weeks because vector-only results still look plausible.
+
 ### 3. `split_salt: ~` becomes the literal salt `"None"`
 
 **Trap.** `salt = str(config.get("split_salt", repo_name))`. A *present-but-null* YAML key (`split_salt: ~`) makes `.get` return `None` — the default only fires on a **missing** key — so `str(None)` salts every train/val/test split with the literal string `"None"`, silently diverging from the intended per-repo salt and setting up a train↔eval split mismatch.
@@ -43,6 +51,14 @@ conn.execute("INSERT INTO issue_fts(rowid, title, body) VALUES (?, ?, ?)", (n, t
 **Fix.** Add the agent scratch dir (`.claude`, and any `*/worktrees/*`) to the exclusion set in *both* walkers.
 
 **Rule.** A repo that self-hosts agent worktrees silently doubles every index that walks the tree. Exclude agent scratch dirs, and validate provenance paths against a *real* build, not a toy fixture — a toy fixture never has a nested worktree.
+
+### 4a. Nested checkouts, generation three: prune by construction, not by name
+
+**Trap.** The §4 fix excluded the scratch dir *by name*. Months later worktrees reappeared under a *different* root-level name no list knew — and a clean index rebuild came out **double**: half its chunks were duplicate worktree content. A third walker-pollution generation, same mechanism, new name. Bonus finding: the project's three tree walkers (memory extractor, code source, docs source) each carried a *private* exclude list, and they had drifted — one got enriched in a perf fix, the others didn't.
+
+**Fix.** Stop playing the name game. One shared exclude constant for every walker, plus an `os.walk`-based shared walker that prunes, top-down, **any subdirectory containing `.git`** — a directory for clones, a *file* for worktrees. A nested checkout is duplicate repo content by construction, whatever it's called. (Top-down pruning also never descends into `node_modules` at all — the old `rglob` walked everything and filtered afterwards.)
+
+**Rule.** Duplicate "skip these dirs" knowledge WILL drift; centralise it. Prune nested checkouts structurally (`.git` marker), not by name. And when an index size jumps on rebuild, diff its *composition* (top-dir counts old vs new) before shipping a diagnosis — the first diagnosis here blamed a package-manager store that turned out to contribute eight files.
 
 ### 4b. An incremental re-index never prunes chunks for *deleted* files
 
@@ -79,6 +95,14 @@ conn.execute("INSERT INTO issue_fts(rowid, title, body) VALUES (?, ?, ?)", (n, t
 **Fix.** Require line signals in `file.py:NN` form, never bare integers, and pin the eval suite to a source commit (store the sha in the suite; warn on mismatch at eval time).
 
 **Rule.** An eval signal must be specific enough that only a correct answer contains it, and pinned enough that the moving target doesn't invalidate it.
+
+### 7a. A comparative eval measures the whole pipeline — audit what each arm received
+
+**Trap.** A "RAG hurts reasoning" result survived one root-cause pass (the stale index, §4b) and shipped with a plausible mechanism ("the retrieved chunks never contain the connecting hop"). A later audit *probed the actual injected context* and falsified it: the connecting answer **was present in ~half the injected blocks** — the model just couldn't assemble it from raw snippets (it relayed the same content 39/40 when handed as an explicit derivation). Under the surviving numbers sat five silent gaps: a dead lexical arm (§2b), an invisible file path, a flat block cut that dropped all but one chunk, a citation metric that couldn't see backtick-wrapped prose citations, and an all-YES suite half of whose signals could be scored by restating the question. None flipped the headline; all distorted sizes and mechanisms. Full anatomy: [`19 § 8.4`](19-evaluating-quality.md).
+
+**Fix.** Before believing a comparative result: dump a sample of each arm's actual injected blocks; run the scorer against a handful of real answers by eye; check the suite's answer-polarity distribution; and treat sub-noise-floor deltas as ties per your own methodology.
+
+**Rule.** The score table shows you the *ranking*; only probing the pipeline shows you the *mechanism*. Publish the mechanism only after you've watched the data flow.
 
 ---
 

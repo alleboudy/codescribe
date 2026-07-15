@@ -45,7 +45,13 @@ Beside `query_facts` / `explain_entity`, the harness gets two reasoning tools ([
 - **`trace_path {source, target}`** — the shortest call/dependency path from one entity to another, each hop a cited `file:line`. "How does A end up reaching D?" The multi-hop question `query_facts` can't answer in one hop.
 - **`imagine_impact {entity, change_kind}`** — the deductively-true **impact cone**: everything that transitively calls `entity` and may need updating, grouped by hop-distance, each with its shortest proof path. "What breaks if I change X?"
 
-Both degrade to a canonical "no derivation — try `query_facts` / `search_code`" when the graph is absent or the goal is unreachable, so they are safe to register before the graph is rich.
+Both degrade to a canonical "no derivation — try `query_facts` / `search_code`" when the graph is absent, so they are safe to register before the graph is rich.
+
+### The proven NO: `refute_path`
+
+An *unreachable* goal deserves better than the canonical shrug — a bare "no derivation found" conflates **refuted** with **gave up at the depth bound**, and those are different claims. `refute_path` runs the same BFS to exhaustion and, when no path exists, returns a `Refutation`: how many nodes were explored, and whether the frontier emptied *naturally* (the subject's entire reachable cone was searched — the refutation is complete for the current graph) or the depth bound cut the search (the honest claim is only "no path within N hops"). The completeness check is exact, not pessimistic: a leaf sitting *at* the bound doesn't spoil it; only an unexpanded edge does. The `trace_path` tool renders it as a citable NO — *"No — `a` does not reach `b` in the current code graph (complete search of `a`'s reachable cone, 214 nodes explored)"* — with the closed-world caveat stated (the claim is relative to the facts the extractors captured; dynamic dispatch they can't see is outside it).
+
+Two consumers make this more than politeness: **negative eval tasks** (a suite whose answers are all YES can never catch a yes-biased model — the v2 multi-hop generator emits negatives *only* for pairs the engine proves unreachable with a complete search, scored via an `answer_polarity` field folded in as one synthetic signal), and **negative training synthesis** (teaching the fine-tune calibrated NO answers with the search evidence as grounding — the natural next imagination kind).
 
 ## 4. Imagination, precisely (not poetically)
 
