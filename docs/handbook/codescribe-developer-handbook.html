@@ -473,6 +473,23 @@ python -m codescribe_train.train.ablation run --tasks evals/&lt;suite&gt;.json -
 <div class="tip"><span class="lbl">Why this is the headline contribution</span> The imagination layer <strong>closes the loop</strong> — the reasoner's derivations become training data that measurably improves the fine-tune, contamination-guarded (generalization, not leakage) and gated (it cannot collapse). It is the first time any synthetic source moved the model the right way, and the empirical payoff of building the whole reasoning stack.</div>
 </section>
 
+
+<h2>5.5 The final matrices — every comparison, one view</h2>
+<p class="lead">The consolidated scoreboard after the audit, the fixed retrieval pipeline, the equalized injection parameters, the full lattice, the de-echoed v2 suite, the imagination-model promotion, and the embedder arc.</p>
+<table>
+  <tr><th>config</th><th>single-hop</th><th>multi-hop</th><th>v2 positives</th></tr>
+  <tr><td>base</td><td>0.537</td><td>0.206</td><td>0.017</td></tr>
+  <tr><td>base_rag</td><td><strong>0.736</strong></td><td>0.194</td><td>0.067</td></tr>
+  <tr><td>base_ns</td><td>0.641</td><td>0.856</td><td>0.975</td></tr>
+  <tr><td>base_rag_ns</td><td>0.733</td><td>0.813</td><td>0.967</td></tr>
+  <tr><td>ft</td><td>0.590</td><td>0.319</td><td>0.075</td></tr>
+  <tr><td>ft_rag</td><td>0.700</td><td>0.256</td><td>0.075</td></tr>
+  <tr><td>ft_ns</td><td>0.609</td><td><strong>0.938</strong></td><td>0.950</td></tr>
+  <tr><td>ft_rag_ns</td><td>0.687</td><td><strong>0.938</strong></td><td><strong>0.975</strong></td></tr>
+  <tr><td>ft_imag <em>(promoted)</em></td><td>0.630</td><td>0.556</td><td>—</td></tr>
+  <tr><td>ft_imag_ns</td><td><strong>0.693</strong></td><td>0.938</td><td>—</td></tr>
+</table>
+<p>Reads: NS-carrying configs cluster at 0.95–0.975 on the honest suite regardless of model or retrieval (non-NS: 0.02–0.08 — a &gt;12× capability separation); base_rag is the best single-hop cell (retrieval helps the stock model more; the fine-tune is slightly negative under every augmentation); retrieval lands below the bare model on multi-hop for both models (the hop was IN the block 19/40, named 1/40 — anchoring is intrinsic); only targeted reasoning-chain training moved weights (+0.24 vs +0.11) — and that model passed the gate (0.6304 vs 0.5896) and now serves, live-verified. Embedder arc: +26 hit@1 on its own training-pair shape → composed wash → anchorless tie → keep the recipe, don't ship. Fabrication (post-processed retroactively): bare ft invents identifiers in 92% of reasoning answers; the derivation halves it. Full tables + comparability notes: doc 19 §8.6.</p>
 <!-- PART VI -->
 <section class="part">
 <h1>Part VI — Landmines: the traps that already bit</h1>

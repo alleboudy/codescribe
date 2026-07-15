@@ -202,6 +202,55 @@ The strategic consequence: budget effort as symbolic layer ≥ retrieval quality
 
 **And the re-measurement, which settles the question both ways.** With all five gaps fixed and the index rebuilt clean, the RAG rows were re-run. Single-hop: FT+RAG structural **0.611 → 0.700** — the lift over the bare fine-tune (+0.11) now *clears* the 5-point turn-on bar it previously missed, and citation rate doubles to 0.446 (the model can finally cite `path:NN` from a RAG block, because the blocks finally carry line spans); valid-citations-per-answer (rate × precision — the only citation number comparable across extractor versions) rises **+71%**. Multi-hop: FT+RAG **0.256 — still below bare FT's 0.319.** With retrieval, packing, spans, and the metric all repaired, the remaining deficit is *representational*: the model anchors on plausible-adjacent chunks and cannot join them, which is precisely the capability the symbolic layer supplies. Both headline decisions survive, each in a stronger form: **turn RAG on for single-hop lookup (it now earns it), and off for reasoning (its failure is intrinsic, not an implementation accident).** The combined config also recovered to tie FT+NS on multi-hop structure (0.938) at extra latency — the old "RAG degrades the symbolic layer" was partly broken-RAG noise.
 
+
+### 8.6 The final matrices — every comparison, one view
+
+The consolidated scoreboard after the audit, the fixed retrieval pipeline, the equalized injection parameters, the full lattice, the de-echoed v2 suite, the imagination-model promotion, and the embedder arc. If you quote one section of this doc, quote this one.
+
+**Structural `task_mean` — 8 configs × 3 suites** (all cells: fixed pipeline, identical injection parameters, one suite version per column; the imagination rows are context-free/NS-only and therefore pipeline-independent):
+
+| config | single-hop | multi-hop | v2 positives | v2 negatives |
+|---|---|---|---|---|
+| base | 0.537 | 0.206 | 0.017 | 1.00 |
+| base_rag | **0.736** | 0.194 | 0.067 | 1.00 |
+| base_ns | 0.641 | 0.856 | 0.975 | 1.00 |
+| base_rag_ns | 0.733 | 0.813 | 0.967 | 1.00 |
+| ft | 0.590 | 0.319 | 0.075 | 1.00 |
+| ft_rag | 0.700 | 0.256 | 0.075 | 1.00 |
+| ft_ns | 0.609 | **0.938** | 0.950 | 1.00 |
+| ft_rag_ns | 0.687 | **0.938** | **0.975** | 1.00 |
+| ft_imag *(promoted to production)* | 0.630 | 0.556 | — | — |
+| ft_imag_ns | **0.693** | 0.938 | — | — |
+
+Four load-bearing reads: (1) **NS-carrying configs cluster at 0.95–0.975 on the honest v2 positives regardless of model or retrieval** — every non-NS config sits at 0.02–0.08: a >12× capability separation, not a lift. (2) **base_rag is the best single-hop cell** — fixed retrieval helps the stock model more than the fine-tuned one; the fine-tune's delta under every augmentation is slightly negative. (3) **Retrieval lands below the bare model on multi-hop for both models** — the anchoring harm is model-independent and intrinsic. (4) **Only targeted training moved the model**: the reasoning-chain-trained fine-tune gained +0.24 bare multi-hop where the generic corpus managed +0.11 — and it passed the production gate (0.6304 vs 0.5896) and now serves, verified by a live authenticated completion with the prior model one `.prev` copy away.
+
+**Who can actually name the connecting hop (multi-hop):**
+
+| config | named the intermediate | note |
+|---|---|---|
+| ft | 0 / 40 | no reliable transitive knowledge in weights |
+| ft_rag | 1 / 40 | the hop WAS in the injected block 19/40 — the model can't join raw chunks |
+| ft_imag | 4 / 40 | learned to reason-and-cite, not to memorise the graph |
+| ft_ns / ft_rag_ns | **39 / 40** | relays the injected derivation faithfully |
+
+**The embedder arc — three probes, one conclusion:**
+
+| probe | stock | repo-tuned | Δ |
+|---|---|---|---|
+| vector arm, identifier-anchored prompts (hit@1) | 0.573 | **0.833** | +0.260 |
+| composed single-hop task_mean (base_rag / ft_rag) | 0.736 / 0.700 | 0.732 / 0.695 | −0.005 (noise) |
+| vector arm, anchorless NL queries (hit@1 / hit@3) | 0.667 / 0.841 | 0.710 / 0.833 | tie |
+
+The +26 was the shape of the tuned model's own training pairs — a shape the lexical arm already covers. Keep the recipe; don't ship the weights.
+
+**Fabrication rate** (de-echoed suite; a report post-processor, so it scores recorded history):
+
+| config | fabricated identifiers / answer | answers with ≥1 |
+|---|---|---|
+| ft | 3.62 | **0.92** |
+| ft_ns | 2.52 | 0.55 |
+| ft_rag | 4.38 | 0.37 |
+
 ## 9. What to take from this
 
 The headline is not "config X is best" — it is **which layer to turn on for which job**. Read the matrix by column, not by row: pick the axis you care about (structural precision, trustworthy provenance, freshness, multi-hop reasoning, latency budget) and turn on the cheapest layer that wins it. The neuro-symbolic layer earns its place on the axes the others structurally cannot reach — exact provenance and multi-hop reasoning — while RAG owns freshness and the fine-tune owns fluent house style. The full stack is the union, and this methodology is how you prove each piece pays for itself rather than assuming it does.
