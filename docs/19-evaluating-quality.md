@@ -187,14 +187,14 @@ The stale-index case study (§8.1) caught one artifact and the result shipped. W
 | base_ns | 0.641 | 0.856 | **0.975** |
 | ft | 0.590 | 0.319 | 0.075 |
 | ft_rag | 0.700 | 0.256 | 0.075 |
-| ft_ns | 0.623 | **0.938** | 0.950 |
+| ft_ns | 0.609 | **0.938** | 0.950 |
 
 Four findings, each of which changes a default assumption:
 
 1. **The symbolic layer is model-independent.** The *stock* model relays an injected derivation at 0.856–0.975 — on the honest de-echoed suite, *every* NS-carrying config clusters at 0.95–0.975 regardless of model or retrieval, while every non-NS config sits at 0.02–0.08. Total layer separation: the reasoner is the capability, the model is a mouthpiece. It even teaches *citing* by example — the stock model's citation rate jumps 0.05 → 0.93 with derivations in context.
 2. **Retrieval's anchoring harm on reasoning is model-independent too** (base_rag < base, mirroring ft_rag < ft). It's a property of retrieve-then-read at small-model scale, not of any particular fine-tune.
 3. **Fixed retrieval helps the stock model *more* than the fine-tuned one on lookup** — base_rag posts the best single-hop cell measured (0.736 > ft_rag's 0.700). A model with no baked-in opinions about the codebase reads the retrieved context with less interference.
-4. **The generic-corpus fine-tune is the weakest of the three layers on structural axes**: ~+0.05 bare, ~nothing under augmentation. Its real case is fluency, house conventions, and completion styles these suites don't measure — and *targeted* training: the reasoning-chain synthesis retrain lifted bare multi-hop +0.24 where the generic corpus managed +0.11. **What you train on matters more than that you train.**
+4. **The generic-corpus fine-tune is the weakest of the three layers on structural axes**: ~+0.05 bare, and consistently *slightly negative* under augmentation once every cell shares identical injection parameters (−0.036 under retrieval, −0.032 under the symbolic layer, −0.046 under both — each ~2 tasks, but the same sign three times). Its real case is fluency, house conventions, and completion styles these suites don't measure — and *targeted* training: the reasoning-chain synthesis retrain lifted bare multi-hop +0.24 where the generic corpus managed +0.11. **What you train on matters more than that you train.**
 
 The strategic consequence: budget effort as symbolic layer ≥ retrieval quality > generic retrains — and let retrains earn their place through targeted capability synthesis, gated by the eval.
 

@@ -208,6 +208,26 @@ An ablation of the reference deployment measured retrieval-augmented answers at-
 
 After fixes 1–5 landed and the index was rebuilt clean, a re-probe of what the model actually receives showed the lexical arm alive on **100%** of prompts (from 0%), every block carrying its full k=3 (from ~1), and single-hop answer-signal coverage in the injected block up from 0.48 to 0.58 — while multi-hop containment stayed flat, confirming the multi-hop limit was never retrieval but the model's inability to join raw chunks ([`19 § 8.2`](19-evaluating-quality.md)).
 
+## Should you fine-tune the embedder?
+
+Everyone fine-tunes the *generator* and serves the *embedder* stock — ours ran stock for the project's whole life until someone asked why. The answer, measured: **fine-tuning the embedder on the codebase's own vocabulary was the single largest retrieval-quality lever in the project** — larger at the vector level than all six build fixes above combined.
+
+The recipe is small enough to run on the same 8 GB card that serves the models:
+
+1. **Mine contrastive pairs deterministically** — no LLM, no labeling. Three shapes cover the query styles that matter for code: `(file_path + symbol → chunk)` teaches the file-anchored query shape; `(humanized symbol name → its definition)` teaches the house jargon ("compute totals score" → `compute_totals_score`'s body); `(docstring → body-sans-docstring)` teaches the natural-language shape. A mid-sized repo yields ~30k pairs in seconds.
+2. **Guard against contamination before you train**: exclude every file your eval suites cite and every held-out file from pair mining, or your retrieval eval grades an embedder trained on its own answers. (Ours excluded 87 files; what remains still transfers.)
+3. **Train one epoch of MultipleNegativesRankingLoss** (sentence-transformers v3 trainer) with the *same query-instruction prefix you serve with*, so the tuned space matches production use. On an 8 GB card: 8-bit Adam + gradient checkpointing + `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` (our first attempt died in `backward()` with the classic WSL "CUDA error: unknown error" until the allocator flag + halved batch).
+4. **Probe the vector arm in isolation**: embed the *same* chunk corpus with stock and tuned, rank chunks for every eval prompt, compare grounding-file hit@k — FTS and fusion held constant, so any delta is the embedder's.
+
+Measured on ~20.5k chunks / 96 eval prompts:
+
+| | hit@1 | hit@3 | hit@10 | MRR@100 |
+|---|---|---|---|---|
+| stock 0.6B embedder | 0.573 | 0.708 | 0.833 | 0.665 |
+| **repo-tuned** | **0.833** | **0.906** | **0.948** | **0.876** |
+
+hit@1 **+26 points** from one epoch on deterministically-mined pairs, graded only on files the training never saw. Two boundaries to state honestly: the composed end-to-end lift is bounded by how well the *generator* uses what retrieval surfaces (measure both, not just the arm), and better retrieval cannot fix reasoning-over-chunks — that stays the symbolic layer's job. Operationally: a new embedder means a **full vector-index rebuild** (two embedders' vectors can never share a table), so pin the embedder version in your index-status output, and re-tune when the codebase's vocabulary drifts — the pair miner is deterministic, so this can ride a nightly job.
+
 ## The pairing problem (the hard part of our RAG)
 
 For a *bug-fix retrieval* RAG, the index of "bug bodies" is only half the value. The other half is "what was the actual fix?" — i.e., the CL/PR that resolved the bug.
