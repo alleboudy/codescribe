@@ -251,6 +251,111 @@ The +26 was the shape of the tuned model's own training pairs — a shape the le
 | ft_ns | 2.52 | 0.55 |
 | ft_rag | 4.38 | 0.37 |
 
+### 8.7 Teaching the model to drive the tool loop — and what it costs
+
+Live agentic use exposed a failure no offline suite above had measured: the
+fine-tune can *aim* one tool call but cannot *drive the loop*. Without tools it
+fabricates; with them it re-issues the same search over and over — it never
+reads a result and advances to the next call, and it never reaches the edit
+tool. So we trained on whole grounded trajectories —
+
+```
+task → tool call → REAL result → next call → REAL result → grounded answer/edit
+```
+
+— mined **deterministically** (zero LLM in the generator) from the memory
+graph, the working tree, and git history. Three classes: *locate-and-report*
+(search → real hits → read → real file window → an answer citing the true
+file:line and callers from the graph), a *graph-query variant* (query the
+symbolic store, then confirm by reading), and *commit-replay edit* (a real
+small single-file commit: read the **parent-state** file, then an edit whose
+old/new strings are the commit's actual hunk). 447 rows, every one ≤ the
+1,024-token training window (results truncated deterministically; over-window
+rows dropped, never packed). Tool names and JSON schemas match the harness's
+live surface byte-for-byte — training on the wrong tool names mis-grounds the
+model, and we caught ourselves doing exactly that in an earlier generator.
+
+**A new held-out suite for a new behaviour.** The structural gate measures
+what the model *knows*; this measures whether it can *act*. 88 tasks from
+files excluded from trajectory training by a stable per-file hash (plus the
+usual eval-cited/frozen-holdout exclusions), scored offline in two stages
+using the production parser: **first_call** — right tool, right key argument,
+from the prompt alone; **advance** — given the first call *and its real
+result*, does the model advance (next tool, or a file:line answer) instead of
+re-issuing the same call (**loop**)?
+
+**Results.** Round 1 trained the mix (447 trajectories + 252
+imagination-synth rows, under the 15% synthetic cap on 3,961 real rows) for 2
+epochs; round 2 — the one pre-approved iteration — for 3, changing nothing
+else:
+
+| model | structural (gate) | first_call | advance | loop |
+|---|---|---|---|---|
+| champion (serving) | **0.630** | 0.068 | 0.216 | 0.0 |
+| trajectories, 2 ep | 0.610 | **0.920** | 0.943 | 0.0 |
+| trajectories, 3 ep | 0.573 | 0.886 | **0.977** | 0.0 |
+
+By class (first_call / advance):
+
+| class (n) | 2 ep | 3 ep |
+|---|---|---|
+| locate-and-report (55) | 0.98 / 0.98 | 0.85 / 1.00 |
+| graph-query variant (28) | 0.96 / 1.00 | 1.00 / 1.00 |
+| commit-replay edit (5) | **0.00 / 0.20** | **0.60 / 0.60** |
+
+Four things, in order of importance:
+
+1. **Trajectories teach the loop, decisively** — 13.5× on first-call, 4.5× on
+   advancing after results, on files never trained on. And the champion's
+   baseline finally *quantifies* the live diagnosis: right first tool 7% of
+   the time, advances on a result 22% of the time. (Offline it fails by *not
+   advancing* rather than by looping — the visible search-loop is what that
+   deficit looks like inside a real harness turn.)
+2. **Both candidates were DISCARDED by the structural hard guard.** The
+   serving model never changed. This is the beat-or-discard gate doing its
+   job: a capability win that costs structural knowledge does not ship
+   unattended.
+3. **The obvious rescue hypothesis died on contact with round 2.** We guessed
+   the 2-epoch run under-trained the real corpus; three epochs made structure
+   *worse* (−3.6 more points). Trajectory exposure itself trades against
+   structural knowledge, monotonically — the mix, not the epoch count, is the
+   frontier.
+4. **Read the by-class table before writing an iteration off.** The aggregate
+   said round 2 bought nothing (tool-use already saturated); the breakdown
+   says the third epoch bought the *hardest* class — the edit behaviour went
+   0.0/0.2 → 0.6/0.6 (small n, consistent direction) — and paid for it in
+   exactly the coin the gate protects. The loop is cheap to teach; the edit
+   is expensive.
+
+**What the experiments cost.** New house rule, worth stealing: *results carry
+the wall-clock that bought them*, per phase, parsed from the run log's
+timestamped markers by a 90-line script — so a 13× win can be weighed against
+the GPU-hours it took. On the RTX 5070 Laptop reference (8 GB, ~1 GiB co-held
+by an unrelated serving stack):
+
+| phase | round 1 (2 ep) | round 2 (3 ep) |
+|---|---|---|
+| trajectory generation (CPU) | 2:30 | reused |
+| champion tool-use baseline | ~13:50 | reused |
+| smoke gate (10 steps) | ~4:20 | 4:57 |
+| full train (~25.7 s/step) | 4:10:10 | 6:14:37 |
+| structural evals (2 × 56) | ~4:53 | ~6:15 |
+| candidate tool-use eval | ~11:06 | 6:12 |
+| **end-to-end** | **≈4 h 44 m** | **≈6 h 32 m** |
+
+The drivers are boring and that is the point: train time = rows × epochs ÷
+(batch × grad-accum) × s/step; eval time = tasks × generated tokens. Two
+debug generation rounds before the clean one cost ~10 CPU-minutes total and
+were caught by *reading one rendered sample row* — the generator's stats
+counters and a single eyeball found what 1,000+ green unit tests could not.
+
+**The decision.** Budget spent (one run + one pre-approved iteration), both
+discarded, the champion keeps serving — and the finding stands on its own:
+*an intern that finally learns to use its hands forgets part of what it knew.*
+The plausible next levers (deliberately not scheduled): a lighter trajectory
+dose tuned for the loop without the edit class; a separate tool-adapter
+composed at serve time; or re-pricing the gate so "hands" count for something.
+
 ## 9. What to take from this
 
 The headline is not "config X is best" — it is **which layer to turn on for which job**. Read the matrix by column, not by row: pick the axis you care about (structural precision, trustworthy provenance, freshness, multi-hop reasoning, latency budget) and turn on the cheapest layer that wins it. The neuro-symbolic layer earns its place on the axes the others structurally cannot reach — exact provenance and multi-hop reasoning — while RAG owns freshness and the fine-tune owns fluent house style. The full stack is the union, and this methodology is how you prove each piece pays for itself rather than assuming it does.
