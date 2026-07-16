@@ -180,6 +180,32 @@ conn.execute("INSERT INTO issue_fts(rowid, title, body) VALUES (?, ?, ?)", (n, t
 
 **Rule.** For a strictly-local stack, offline is the fail-closed default, opt-*out* for bootstrap — not opt-in. Cover every load path, and add an egress test that drives a *real* load, not a stubbed one.
 
+## Agentic-training & watcher layer
+
+### 16. Probe enum-ish columns before filtering on them — and make zero-yield self-explaining
+
+**Trap (two halves).** (a) The trajectory miner filtered graph entities with `kind IN ('function','method','class')` — names guessed from convention. The store's real kinds are `symbol` / `module` / `file`, so the query matched **nothing** and generation produced zero rows. (b) Every skip happened *before* the emit path's counters, so the run reported all-zeros with no explanation — a burned debug cycle just to learn *where* it died.
+
+**Fix.** (a) `SELECT DISTINCT kind` first; cite the probe in a comment next to the filter. (b) Count every pre-emit skip (`targets`, `no_window`, `no_grep`, `mined_commits`, …) so a zero-yield run carries its own diagnosis.
+
+**Rule.** Never filter on enum-ish column values you haven't probed, and instrument generators so their *failure* output is as informative as their success output.
+
+### 17. Replay edits against the parent state, not today's tree
+
+**Trap.** Commit-replay training rows showed the model a window of the *current* file, then an edit whose old/new strings came from a *historical* commit. Any file that moved on since could lack the old string entirely — the row grounds a lie, teaching the model that edits apply to text that isn't in what it just "read". A second, quieter trap in the same generator: raw recursive grep swept nested-checkout junk (`.worktrees/…` duplicates) into results, wasting the truncation budget on noise — the same duplicate-content class that once silently doubled a retrieval index.
+
+**Fix.** The miner already fetched the parent-state file to verify the hunk applies uniquely — carry that text through and window *it*. Grep through the shared exclusion list every walker uses.
+
+**Rule.** Grounded training data must be *internally* consistent — every turn of a synthetic trajectory must be true relative to the same snapshot — and any tree walk anywhere (index, grep, miner) goes through one shared exclusion list.
+
+### 18. A hung ssh freezes a watcher silently — bound every scripted session
+
+**Trap.** A monitor loop polled a remote run with `$(ssh … grep …)` guarded only by `ConnectTimeout`. One session established and then stalled; the command substitution never returned, the loop froze mid-tick without ever firing its terminal event, and its half-open sessions starved every later ssh to the box — the watcher *became* the outage.
+
+**Fix.** `-o ServerAliveInterval=5 -o ServerAliveCountMax=3` on every scripted ssh (a stalled session dies in ~15 s); prefer bounded single-shot fetches (grep a marker) over streaming whole logs; stop the previous watcher before arming the next.
+
+**Rule.** A watcher must be strictly more reliable than the thing it watches: every remote call it makes needs a hard upper bound, and silence must be distinguishable from "still running".
+
 ---
 
 ## The meta-lesson
