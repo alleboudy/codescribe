@@ -206,6 +206,41 @@ conn.execute("INSERT INTO issue_fts(rowid, title, body) VALUES (?, ?, ?)", (n, t
 
 **Rule.** A watcher must be strictly more reliable than the thing it watches: every remote call it makes needs a hard upper bound, and silence must be distinguishable from "still running".
 
+### 19. Unmasked SFT on tool-RESULT formats teaches the model to emit results, not call tools
+
+**Trap.** Training an agent on multi-turn tool trajectories, we put the harness's
+verbose tool-RESULT payloads (read output, edit-success output) into the training
+text — on the loss, unmasked. Offline the model scored beautifully. Live, under the
+real prompt, it emitted an edit-RESULT payload (`<tool_response>{"path":…,"oldString":…,"newString":…}`)
+*instead of calling the edit tool* — it had learned the result format so well it
+generated the result rather than requesting it. The ordinary bare-JSON repair
+can't recover a payload with no tool *name*, so nothing executed.
+
+**Fix (two layers).** Immediate: a shim that salvages an edit-result-shaped payload
+back into the edit CALL it meant — safe, because the real edit tool then validates
+the old-string against the file. Real: mask the SFT loss to assistant-authored
+tokens (calls + prose), or keep tool-result payloads out of the loss entirely.
+
+**Rule.** In agent SFT, the tool RESULTS are the *environment's* tokens, not the
+model's — never train the model to produce them. Mask assistant-only, or the model
+role-confuses call↔result at inference.
+
+### 20. An offline eval that doesn't reproduce the live prompt shape measures a phantom
+
+**Trap.** The tool-use eval scored the model on short, training-shaped prompts and
+reported 0.93/0.97. The live harness sends a ~7k-token system prompt, ~50 offered
+tools, and `max_tokens=64000`. Under *that*, the same model ran away to context
+truncation (25k tokens in one turn) and role-confused call↔result — neither
+failure exists in the offline suite. The offline numbers were real and useless.
+
+**Fix.** Model the harness's full live prompt in the eval (and in training): its
+token length, its tool count, its `max_tokens`. Where you can't, bound the
+pathologies in the harness — clamp `max_tokens`, restrict the offered toolset.
+
+**Rule.** An eval's prompt distribution is part of the metric. If it doesn't match
+what the model meets in production, a high score is a measurement of the wrong
+thing — verify the top offline result on ONE real end-to-end run before trusting it.
+
 ---
 
 ## The meta-lesson
