@@ -512,6 +512,16 @@ python -m codescribe_train.train.ablation run --tasks evals/&lt;suite&gt;.json -
 
 <!-- PART VI -->
 <section class="part">
+<h2>5.7 The offline→live gap, closed: when the model emits the tool RESULT, not the CALL</h2>
+<p class="lead">The follow-up to §5.6 rebuilt the trajectory data around the live prompt distribution — tool results in the harness's REAL wire formats, harness-shaped system prefixes, phrasing diversity, and an error-recovery class. Offline it was decisive; the live retest is where the lesson lives.</p>
+<table>
+  <tr><th>model</th><th>structural gate</th><th>first-call</th><th>advance-after-result</th></tr>
+  <tr><td>champion (serving)</td><td><strong>0.630</strong></td><td>0.129</td><td>0.565</td></tr>
+  <tr><td>trajectories-v2</td><td>0.628</td><td><strong>0.929</strong></td><td><strong>0.965</strong></td></tr>
+</table>
+<p>Both <em>edit</em> classes scored <strong>1.0 / 1.0</strong> offline vs the champion's 0.0, and it missed the gate by <strong>0.002</strong>. Then the live retest found three failures, each root-caused and fixed: (1) <strong>runaway</strong> — under the real ~7k-token / ~50-tool prompt (max_tokens 64000) it generated 25,000+ tokens in one turn until truncation; a short prompt gets a clean single call (fix: clamp max_tokens at the shim); (2) <strong>result-confusion</strong> — it emitted the edit tool's RESULT payload (<code>&lt;tool_response&gt;{"path":…,"oldString":…,"newString":…}</code>) instead of CALLING the edit tool, having learned the harness's result formats too well on the unmasked loss (fix: the shim salvages the result-shape back into the validated call); (3) <strong>tool-surface</strong> — restrict the agent to the few coding tools to shrink the prompt toward training. With those in place the mechanical edit <strong>landed</strong> deterministically — a one-line constant 44→46, exact indentation, nothing else — through the real model, the real repair chain, and real tool execution. The precise fix the field test set out to make.</p>
+<p>Two lessons outlast the stack: <em>unmasked SFT on tool-RESULT formats teaches the model to generate results, not call tools</em> — mask assistant-only or keep result payloads off the loss; and <em>an offline eval that doesn't reproduce the harness's live prompt shape measures a distribution the model never meets</em>. Honest scope: prescribed edits land; find-then-edit still guesses paths; novel-bug diagnosis stays human. Full detail: doc 19 §8.8.</p>
+
 <h1>Part VI — Landmines: the traps that already bit</h1>
 <p class="lead">Each cost real debugging time. Internalise them before touching the matching subsystem.</p>
 
@@ -539,6 +549,10 @@ python -m codescribe_train.train.ablation run --tasks evals/&lt;suite&gt;.json -
 <p>Commit-replay training rows windowed the <em>current</em> file while the edit came from a historical commit — a moved-on file can lack the old string entirely, so the row grounds a lie. Fix: window the parent-state text the miner already fetched for its uniqueness check. Every turn of a synthetic trajectory must be true relative to the same snapshot. (Same pass: recursive grep swept nested-checkout junk into results — one shared exclusion list for every walker, again.)</p>
 <h3>12. A hung ssh freezes a watcher silently</h3>
 <p>A monitor loop guarded only by <code>ConnectTimeout</code> froze mid-tick when an established session stalled — it never fired its terminal event, and its half-open sessions starved later connections: the watcher became the outage. Fix: <code>ServerAliveInterval/CountMax</code> on every scripted ssh, bounded single-shot fetches over whole-log streams, stop the old watcher before arming the next. A watcher must be strictly more reliable than what it watches.</p>
+<h3>13. Unmasked SFT on tool-RESULT formats teaches the model to emit results, not call tools</h3>
+<p>Training an agent on multi-turn trajectories with the harness's verbose tool-RESULT payloads on the loss: offline it scores beautifully; live, under the real prompt, it emits an edit-RESULT payload instead of calling the edit tool — it learned the result format so well it generates the result. Fix (bridge): a shim that salvages a result-shaped payload back into the call it meant (the real tool then validates it). Fix (cure): mask the SFT loss to assistant-authored tokens. <em>Rule: tool RESULTS are the environment's tokens, not the model's — never train the model to produce them.</em></p>
+<h3>14. An offline eval that doesn't reproduce the live prompt shape measures a phantom</h3>
+<p>A tool-use suite scored 0.93/0.97 on short training-shaped prompts; the live harness sends a ~7k-token system prompt, ~50 tools, and max_tokens=64000, under which the same model ran away to context truncation and role-confused call↔result — failures absent from the offline suite. <em>Rule: an eval's prompt distribution is part of the metric; verify the top offline result on ONE real end-to-end run before trusting it.</em></p>
 <div class="note"><span class="lbl">Meta-lesson</span> Prefer <strong>evidence over assertion</strong> everywhere: a reproduced bug over a suspected one, a verified swap over an assumed one, the binary's own report over a schema you read, a runtime assertion that your fixed code is the code running. Almost every landmine bit because a plausible-looking assumption went unchecked.</div>
 </section>
 
