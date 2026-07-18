@@ -356,6 +356,74 @@ The plausible next levers (deliberately not scheduled): a lighter trajectory
 dose tuned for the loop without the edit class; a separate tool-adapter
 composed at serve time; or re-pricing the gate so "hands" count for something.
 
+### 8.8 The offline→live gap, closed: when a model learns the tool RESULT instead of the CALL
+
+§8.7 ended with the loop taught 13× offline but the *live* prompt distribution
+unmodeled. The follow-up rebuilt the trajectory data around exactly that gap —
+tool results rendered in the coding harness's REAL wire formats (escaped shell
+stdout, the read/edit result payloads, the exact error strings), harness-shaped
+system prefixes on most rows, task-phrasing diversity, and an **error-recovery**
+class (a deliberately wrong edit → the harness's real "not found" error →
+re-read → corrected edit → success). Offline it was decisive:
+
+| model | structural gate | first-call | advance-after-result |
+|---|---|---|---|
+| champion (serving) | **0.630** | 0.129 | 0.565 |
+| trajectories-v2 | 0.628 | **0.929** | **0.965** |
+
+Both *edit* classes scored **1.0 / 1.0** offline versus the champion's 0.0 — and
+it missed the promotion gate by **0.002** (a tenth of one task). By the offline
+numbers it was ready. The live retest is where the lesson lives.
+
+**Three live-only failures, each root-caused and fixed:**
+
+1. **Runaway.** Under the harness's real prompt (~7k tokens, ~50 offered tools,
+   `max_tokens` set to 64000) the model generated **25,000+ tokens in a single
+   turn** until it hit the context limit — the harness hung at the turn boundary.
+   The *same model* under a short prompt emits one clean call and stops. Nothing
+   was wrong with the call; the ceiling was just absent. Fix: clamp `max_tokens`
+   at the proxy shim.
+2. **Result-confusion — the headline.** With generation bounded, the model
+   emitted, verbatim, the edit tool's **RESULT payload**
+   (`<tool_response>{"path":…,"oldString":"…","newString":"…"}`) *instead of
+   calling the edit tool* — then hallucinated the next user turn. It had learned
+   the harness's result formats so well (they were in the training text, on the
+   loss) that under the real prompt it **generated the result rather than
+   requesting it**. The edit CONTENT was exactly correct; only the wrapper was
+   wrong, and the ordinary bare-JSON repair can't recover a payload with no tool
+   *name* in it. Fix: teach the shim to salvage an edit-result-shaped payload
+   back into the edit CALL it meant — safe, because the real edit tool then
+   validates the old-string against the actual file (a hallucinated string is
+   rejected, and the error-hint fires).
+3. **Tool-surface mismatch.** The harness offered ~50 tools; the training rows
+   modelled a handful. Restricting the agent to the few coding tools shrank the
+   live prompt back toward the trained distribution.
+
+With those three in place, the mechanical edit **landed** — deterministically —
+through the real model, the real repair chain, and real tool execution: a
+one-line numeric constant changed from 44 to 46, exact indentation preserved,
+nothing else touched. The precise fix the original field test set out to make.
+
+**What to take.** Two general lessons outlast this stack:
+
+- *Putting a tool's verbose RESULT format into unmasked SFT text teaches the
+  model to GENERATE results, not to call tools.* If you train an agent on
+  multi-turn tool trajectories, mask the loss to assistant-authored tokens (the
+  calls and the prose), or keep the tool-result payloads out of the loss
+  entirely — otherwise the model role-confuses call↔result at inference. A
+  deterministic shim that maps a result-shaped emission back to the call is a
+  fine BRIDGE, not the cure.
+- *An offline eval that doesn't reproduce the harness's real prompt shape — its
+  token length, its tool count, its `max_tokens` — measures a distribution the
+  model will never meet.* The 0.929/0.965 offline scores were real; they were
+  also earned on prompts a fraction of the live size. Model the full live prompt
+  in training, or bound its pathologies in the harness — ideally both.
+
+Honest scope: prescribed mechanical edits land reliably; *find-then-edit* still
+guesses a plausible path instead of searching for the real one, and diagnosing a
+novel bug remains a human's job. The demonstrated win is **reliable execution of
+a prescribed edit** — which, for a local intern-class model, is a real one.
+
 ## 9. What to take from this
 
 The headline is not "config X is best" — it is **which layer to turn on for which job**. Read the matrix by column, not by row: pick the axis you care about (structural precision, trustworthy provenance, freshness, multi-hop reasoning, latency budget) and turn on the cheapest layer that wins it. The neuro-symbolic layer earns its place on the axes the others structurally cannot reach — exact provenance and multi-hop reasoning — while RAG owns freshness and the fine-tune owns fluent house style. The full stack is the union, and this methodology is how you prove each piece pays for itself rather than assuming it does.
