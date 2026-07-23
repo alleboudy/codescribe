@@ -424,6 +424,54 @@ guesses a plausible path instead of searching for the real one, and diagnosing a
 novel bug remains a human's job. The demonstrated win is **reliable execution of
 a prescribed edit** — which, for a local intern-class model, is a real one.
 
+### 8.9 The case study: six real micro-assignments, a promotion, and where the ceiling actually is
+
+The masking fix (§8.8) didn't just close the live gap — retrained with
+assistant-only loss, the candidate became the **first trajectory model to PASS
+the structural promotion gate** (0.636 vs the champion's 0.630, with tool-use
+0.96 first-call / 0.99 advance) and was **promoted to production**, identity-
+verified, with instant rollback staged.
+
+**The case-study protocol** (publishable, deterministic): six graded REAL
+micro-assignments on a production source file, run through the tuned model +
+the production repair chain + real tool execution, judged by expected/forbidden
+diff markers — no human scoring in the loop. Each case restores the workspace.
+
+| case | v3 (serving) | notes |
+|---|---|---|
+| explicit numeric edit | ✅ 1 turn ~1s | |
+| search-then-edit | ✗ | the persistent one — see below |
+| string-label change | ✅ 1 turn | v2 failed this; masking gained it |
+| comment insertion | ✅ 2 turns | |
+| disambiguated edit ("the one WITHOUT a weight param") | ✅ 1 turn | |
+| full diagnosis (2px overlay bug) | ✗ | reasoning ceiling — stays human |
+| **total** | **4/6** | |
+
+**Two follow-up retrains both DISCARDED** — the gate defending its own champion:
+adding a locate-then-edit imitation class + synthesized micro-edits cost 3
+structural points for zero capability gain (the dose/displacement trade governs
+even with masking), and a read-persistence class moved nothing. The recipe found
+its local optimum on the second promotion.
+
+**Where the ceiling actually is.** Instrumenting the stubborn search-then-edit
+case produced the arc's cleanest finding. We removed every deterministic
+obstacle: resolved the file FOR the model (a launcher pre-step: identifier →
+grep → rewrite the task imperatively), fed it the true target region on an edit
+miss (the error-hint), fixed the sandbox to accept its quoting. The final
+trace: it read the exact target text, held everything needed to edit — **and
+answered with a location report instead of editing**. It reverts to its
+DOMINANT trained class (locate-and-report, ~64% of trajectory rows) at the
+finish line. Not a path problem, not a whitespace problem, not tooling: a
+**behavioral prior**. At intern scale, when several trained patterns fit the
+context, the model completes the statistically safest one.
+
+*What to take:* (1) class balance in agent SFT is a behavioral dial, not just a
+data-quantity knob — the majority class becomes the default exit; (2) harness
+determinism (decomposition, hints, salvage, clamps) converts most failures into
+model-only residuals, which is exactly what makes the residuals measurable; (3)
+know which assignments your local model reliably solves — ours: any PRESCRIBED
+edit, in seconds — and route work accordingly.
+
 ## 9. What to take from this
 
 The headline is not "config X is best" — it is **which layer to turn on for which job**. Read the matrix by column, not by row: pick the axis you care about (structural precision, trustworthy provenance, freshness, multi-hop reasoning, latency budget) and turn on the cheapest layer that wins it. The neuro-symbolic layer earns its place on the axes the others structurally cannot reach — exact provenance and multi-hop reasoning — while RAG owns freshness and the fine-tune owns fluent house style. The full stack is the union, and this methodology is how you prove each piece pays for itself rather than assuming it does.
