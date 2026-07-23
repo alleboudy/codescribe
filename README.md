@@ -132,7 +132,7 @@ The scoring is deliberately CI-testable: the goal is to produce a working stack,
 
 ## License
 
-The writing here is licensed CC BY 4.0 — share it, quote it, translate it, build on it. The only ask is a credit to Ahmad Alleboudy and a link back.
+Everything here is dedicated to the public domain under [CC0 1.0 Universal](LICENSE) — use it, quote it, translate it, build on it, no permission or attribution required (a credit to Ahmad Alleboudy is appreciated, never expected).
 ---
 
 ## Where to start
