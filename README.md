@@ -132,16 +132,7 @@ The scoring is deliberately CI-testable: the goal is to produce a working stack,
 
 ## License
 
-[MIT](LICENSE) — Copyright © 2026 Ahmad Alleboudy.
-
-You're free to use these recipes commercially, modify them, fork them, integrate them into private or public codebases. Standard "AS IS / no warranty / no liability" terms — see [`LICENSE`](LICENSE) for the full text.
-
-The fine-tuned model you produce is your own — your codebase, your weights, your call on how you license it.
-
-### Attribution appreciated (but not legally required)
-
-If you build a fine-tuned model, RAG system, or MCP server based on these recipes, a `based on codescribe by Ahmad Alleboudy` credit in your README, model card, or release notes is appreciated. It's not enforceable through any standard licence — copyright doesn't cover techniques and ideas, only the files themselves — but it helps the project (and the author) see what people are building.
-
+The writing here is licensed CC BY 4.0 — share it, quote it, translate it, build on it. The only ask is a credit to Ahmad Alleboudy and a link back.
 ---
 
 ## Where to start
