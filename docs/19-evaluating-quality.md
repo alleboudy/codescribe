@@ -475,3 +475,63 @@ edit, in seconds — and route work accordingly.
 ## 9. What to take from this
 
 The headline is not "config X is best" — it is **which layer to turn on for which job**. Read the matrix by column, not by row: pick the axis you care about (structural precision, trustworthy provenance, freshness, multi-hop reasoning, latency budget) and turn on the cheapest layer that wins it. The neuro-symbolic layer earns its place on the axes the others structurally cannot reach — exact provenance and multi-hop reasoning — while RAG owns freshness and the fine-tune owns fluent house style. The full stack is the union, and this methodology is how you prove each piece pays for itself rather than assuming it does.
+
+## 8.10 When your eval lies to you: order-coupling under a server-side prefix cache
+
+We had two "exact reproductions" of a 21-case agentic suite — same score, same
+per-case results, twice. Then an arm whose ONLY change was one case's
+conversation flipped two *other* cases whose prompts were byte-identical.
+
+The culprit was not sampling (temperature was 0). llama.cpp's prefix cache
+evaluates a cached prompt down a slightly different numeric path than a fresh
+one, and greedy argmax flips on knife-edge tokens — so case N's outcome could
+depend on which cases ran before it. Our "reproductions" had merely replayed
+the same history, so the cache alignment was identical: stability across runs
+does not prove order-independence if the runs share history.
+
+The fix costs a little latency and buys the property an eval cannot live
+without: `cache_prompt: false` on every request — full re-eval, every time.
+Re-measured under the fixed regime, a lever we believed helped (task
+decomposition at the launcher) measured at exactly ZERO effect: its earlier
+"win" was cache noise with a plausible mechanism attached. Fix the regime
+first; only then measure levers.
+
+## 8.11 Price your ceiling with an oracle arm
+
+When the model failed a class of symptom-phrased tasks ("users report X — find
+and fix it"), we could not tell whether retrieval or the model was the wall.
+The instrument that settled it: a four-arm harness on the same suite —
+bare, real retrieval, and an ORACLE arm where the correct file+line derivation
+is hand-injected in the exact same format the real retriever would use.
+
+The oracle arm is the ceiling of the retrieval investment: everything it wins
+that real retrieval loses is recoverable by better retrieval; everything it
+loses is the model's wall, and no retrieval work will move it. Ours read:
+bare 0/11, real retrieval 2/11, oracle 4/11 — so retrieval work had already
+captured half its addressable headroom, and 7 of 11 failures were the model
+failing WITH perfect grounding (stopping after reading, editing blind, fumbling
+exact-match edit strings). That one table redirected the roadmap from "more
+retrieval" to "a stronger base model", with numbers instead of vibes.
+
+## 8.12 Dense retrieval finds consumers; symbols finish the job
+
+Embedding-based code retrieval has a consistent failure shape: for "the small
+caption-style text is hard to read", the top hits are the views that RENDER
+such text — never the one-line theme constant that sizes it. Definitions are
+terse; consumers are prose-dense; cosine similarity prefers prose. The
+defining file did not appear in the dense top-10 at all.
+
+Two deterministic post-stages fixed most of it without touching the embedder:
+
+1. **The definition hop.** Winning chunks are scanned for `Type.member`
+   references; each resolves (single-site grep, noise paths and stdlib members
+   excluded) to its declaration, which is appended to the injection. Dense
+   finds the neighborhood; the symbol hop lands the definition.
+2. **Line sharpening.** A hit is a chunk, but the model's first read window is
+   steered by the LINE you inject. Injecting the chunk's start line lost a case
+   that the same file at the right line wins — so inject the line inside the
+   winning chunk with the most query-term hits, not the chunk boundary.
+
+Each stage converted a real end-to-end case that pure dense retrieval failed.
+The composition — dense recall, symbolic precision — outperformed either alone
+at a total cost of one grep per hit.

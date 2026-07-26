@@ -246,3 +246,50 @@ thing — verify the top offline result on ONE real end-to-end run before trusti
 ## The meta-lesson
 
 Half of these (#5, #10, #11, #12) were only caught by **running on the real target** — a stubbed test, a toy fixture, or a schema read from source would have missed every one. The other half (#1, #2, #8, #9, #13) are the kind a careful reviewer catches by asking "what's the *negative* case?" — the old term that should be gone, the sibling that shares a prefix, the null key, the union that should be scoped. Build both habits: **verify against reality**, and **test the negative**.
+
+### 21. Greedy + identical prompt + identical server ≠ identical output
+
+A server-side prefix cache evaluates cached and fresh prompts down slightly
+different numeric paths; greedy argmax flips on knife-edge tokens. In a
+multi-case eval this couples case N's outcome to the cases before it — and
+shared-history reruns will happily "reproduce" the coupled result. Pin
+`cache_prompt: false` (or your server's equivalent) in every eval harness, and
+treat any per-case flip whose own prompt didn't change as a harness bug until
+proven otherwise.
+
+### 22. A repair layer that touches paths needs the harness's resolver
+
+Our edit-failure hint (feed the file's closest real region back after a failed
+exact-match edit) silently never fired in one harness: it tested the model's
+raw relative path against the process cwd. The live agent always sent absolute
+paths, so the gap was invisible for weeks — and the failures it would have
+rescued were misattributed to the model. Context-free repair helpers should
+take a `resolve=` hook; verification is the repair showing up in the run
+trace, not the code reading correctly.
+
+### 23. Index and eval trees rot from the inside
+
+Three pollution sources each cost us a debugging round: a `.venv` full of
+site-packages inside the repo tree (30 minutes of embedding someone else's
+library code), a `.worktrees` directory duplicating every file (every top-k
+list contained doubles), and `__tests__` slipping a `tests?` regex. Excludes
+must be applied at BOTH layers — the tree copy and the indexer — and asserted
+on the root-relative path, not the absolute one (a tmp dir named `test_*`
+once excluded everything).
+
+### 24. A loop variable shadowed our tokenizer and starved a training run
+
+`tok = grep_token_for(...)` inside a generator loop rebound the function-scope
+tokenizer; every later render failed and was silently counted as a routine
+drop. Two training runs got far fewer rows of their most important class than
+designed — discovered only when a rebalance made the class count land at
+exactly zero. Name loop temporaries like temporaries, and make "zero rows of
+the class this run exists for" a loud failure, not a counter.
+
+### 25. Right file, wrong line still loses
+
+Retrieval that lands the correct FILE can still lose the case: the line number
+you inject steers the model's first read window, and a chunk-start line put
+the target just outside it. Sharpen the injected line to the best-matching
+line inside the winning chunk. The diff between "right file at line 1" and
+"right file at line 24" was a solved case.
