@@ -293,3 +293,33 @@ you inject steers the model's first read window, and a chunk-start line put
 the target just outside it. Sharpen the injected line to the best-matching
 line inside the winning chunk. The diff between "right file at line 1" and
 "right file at line 24" was a solved case.
+
+### 26. A chat template may re-render EARLIER turns
+
+A newer model family's template strips or keeps reasoning blocks in *prior*
+assistant turns depending on what follows them — so rendering a k-message
+prefix is not a prefix of the k+1 render, and any incremental-render trick
+(ours computed loss-mask spans that way) silently drops every row. The fix
+that holds across a family: locate assistant turns by the template's own
+structural markers in ONE full render, and fail loud unless the block count
+matches the message count. Probe prefix-monotonicity before trusting
+incremental rendering on any new template.
+
+### 27. "Fits in 4-bit" is a load-time question, not a parameter-count estimate
+
+An 8B model at 4-bit quantization refused to load on an 8 GB card that a 7B
+had trained on comfortably — modules dispatched to CPU/disk, hard error —
+with a resident service holding one more GiB than the estimate assumed. The
+smoke gate answers fits-or-not in minutes and costs nothing; the download it
+would have saved cost 23 GB. Related: a training framework's first load of a
+new base may fetch a quantized companion repo — offline pins break there, so
+give the run an explicit inbound-only escape hatch.
+
+### 28. A "polish" epoch can scrub what the knowledge stage built
+
+Sequential fine-tuning (knowledge stage on the corpus, then a low-lr
+execution stage resuming the same adapter) is not conservative by default:
+ours ended BELOW plain mixing on the knowledge score AND lost the flagship
+execution capability, because the gentle second stage neither preserved
+stage one nor delivered enough task dose to express the skill. Gate a
+curriculum like any other candidate — ours was, and the gate said no.

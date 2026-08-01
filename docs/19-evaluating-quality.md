@@ -535,3 +535,39 @@ Two deterministic post-stages fixed most of it without touching the embedder:
 Each stage converted a real end-to-end case that pure dense retrieval failed.
 The composition — dense recall, symbolic precision — outperformed either alone
 at a total cost of one grep per hit.
+
+## 8.13 The base-model rock: when the ceiling turns out to be the generation
+
+After the data axis closed (five discards bounding every mix we could author)
+and retrieval captured half its oracle headroom, one lever remained: swap the
+2024-generation 7B base for a 2025-generation base, same recipe, same gate.
+
+Two results paid for the whole experiment:
+
+**The envelope is a load-time fact.** The 8B-class candidate would not even
+LOAD in 4-bit on the 8 GB trainer (modules dispatched to CPU/disk) — after
+23 GB of downloads. The smoke gate answers the fits-or-not question in
+minutes; run it before committing bandwidth. The 4B-class sibling fit with
+headroom, and turned out to be the sharper hypothesis anyway.
+
+**The behavioral ceiling moved with the generation.** Our champion's two
+signature failures — the search-then-edit exit (read the right region, then
+report instead of editing) and a disambiguation case — had survived five
+rounds of data engineering on the old base. The new-generation 4B crossed
+BOTH on its first recipe pass, while beating the champion's tool-loop
+mechanics outright (perfect advance rate, zero loops). What it lacked was
+repo knowledge: the structural score sat far below the champion's, and every
+attempt to buy that knowledge — more epochs, double adapter rank, a
+knowledge-first curriculum with a low-lr polish stage — either walked a
+measured structure↔execution frontier or landed strictly worse. The
+curriculum run added a refinement worth keeping: the crossed capability is
+generation POTENTIAL, not a gift — under-dose the trajectory training (a
+gentle polish epoch) and it fails to express at all.
+
+The architecture that fell out is a two-model posture: the old-generation
+model keeps the knowledge role and production; the new-generation small model
+is registered as an opt-in EXECUTOR for one-shot edit work, deliberately off
+the promotion path. And the meta-lesson for anyone running a local lab: when
+a capability wall survives every data recipe you can author, the wall may not
+be yours to move — price it against the next model generation before spending
+another training night on it.
