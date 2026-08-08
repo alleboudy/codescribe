@@ -535,6 +535,25 @@ python -m codescribe_train.train.ablation run --tasks evals/&lt;suite&gt;.json -
   <li><strong>The wall moved with the model generation.</strong> A 2025-generation 4B crossed, on its first recipe pass, the two behavioral failures five data rounds never moved on the 2024 7B — while beating its tool mechanics outright — but could not buy the old model's corpus knowledge at any measured dose, rank, or curriculum. The shipped answer is a <strong>two-model posture</strong>: old generation keeps knowledge and production; new small generation serves as an opt-in executor, off the promotion path. When a capability wall survives every recipe you can author, price it against the next generation before spending another training night.</li>
 </ul>
 
+
+<h2>5.10 Knowing when to stop tuning — the conservation law (the ceiling)</h2>
+<p>Three independent attempts to lift the fine-tune's structural score all
+failed the same way — each traded one competence for another along a different
+axis (docs 19 §8.14). Rebalancing the data mix lifted the weak class and sold
+structure; a newer-generation base crossed behavioral ceilings the old base
+couldn't but never bought its corpus knowledge; and doubling the best synthetic
+source changed nothing because a fixed "majority-real" cap trimmed the extra
+rows, turning enrichment into displacement. On a fixed recipe family (base,
+window, synth cap) structure and execution behave like a conservation law: you
+walk a frontier, you don't lift it. The engineering value is knowing when to
+STOP — after three axes hit the same wall, the budget belongs on a variable
+OUTSIDE the family (a different base, more hardware), not another night on the
+same knobs. Two scaffolds aimed at a clear failure taxonomy also moved zero
+suite score, because the failures never reached the step they guarded — a
+reminder to measure a fix against the failing cases, not the taxonomy that
+inspired it (§8.15).</p>
+
+
 <h1>Part VI — Landmines: the traps that already bit</h1>
 <p class="lead">Each cost real debugging time. Internalise them before touching the matching subsystem.</p>
 
@@ -581,6 +600,21 @@ python -m codescribe_train.train.ablation run --tasks evals/&lt;suite&gt;.json -
 
 <h3>19. A "polish" epoch can scrub what the knowledge stage built</h3>
 <p>Knowledge-stage-then-gentle-execution-stage ended below plain mixing on knowledge AND lost the flagship capability — a low-lr pass neither preserves nor teaches. Gate curricula like any other candidate.</p>
+
+
+<h3>20. A fixed synth cap turns "more synth" into "displaced synth"</h3>
+<p>Doubling a synthetic source changed nothing about how much of it trained: a
+majority-real cap trimmed the extra rows, and within the fixed synthetic slice
+the enriched source displaced other synthetic rows — target metric flat, the
+displaced behavior regressed. Confirm the cap lets the extra through before
+enriching a capped input; otherwise enrichment is silently displacement.</p>
+
+<h3>21. A correct scaffold can move nothing</h3>
+<p>Two harness scaffolds matched a clear failure taxonomy, were individually
+correct (one fired on exactly the right cases), and moved the suite score by
+zero — the failures never reached the step they guarded. Pattern-matching a
+taxonomy is not evidence; measure against the failing cases before shipping a
+fix as an improvement.</p>
 
 <div class="note"><span class="lbl">Meta-lesson</span> Prefer <strong>evidence over assertion</strong> everywhere: a reproduced bug over a suspected one, a verified swap over an assumed one, the binary's own report over a schema you read, a runtime assertion that your fixed code is the code running. Almost every landmine bit because a plausible-looking assumption went unchecked.</div>
 </section>
