@@ -571,3 +571,51 @@ the promotion path. And the meta-lesson for anyone running a local lab: when
 a capability wall survives every data recipe you can author, the wall may not
 be yours to move — price it against the next model generation before spending
 another training night on it.
+
+## 8.14 The conservation law, and when to stop tuning a recipe
+
+Three independent attempts to lift a fine-tune's structural score all failed the
+same way, and the pattern is worth naming. Each traded one competence for
+another along a different axis:
+
+- **Data mix.** Rebalancing the training mix toward the weak class lifted that
+  class and sold the structural score. (Measured at both ends of the mix axis.)
+- **Base model.** A newer-generation smaller base crossed behavioral ceilings
+  the old base never could — but couldn't buy the old model's corpus knowledge
+  at any dose, rank, epoch count, or knowledge-first curriculum.
+- **Synthetic distribution.** Doubling the highest-value synthetic source (the
+  one that historically lifted structure) changed nothing — because a fixed
+  "majority-real" cap trimmed the extra rows before training, so "2× synth"
+  silently became "same share, more-diverse pool," and within that fixed slice
+  the enriched source merely **displaced** other synthetic rows, paying the same
+  trade in a new place.
+
+The lesson is the *shape*: on a fixed recipe family (base, window, synth cap),
+structure and execution behave like a conservation law — you move along a
+frontier, you don't lift it. Turning the obvious knobs (more epochs, bigger
+adapter, more of the good data) walks that frontier. Escaping it needs a
+variable OUTSIDE the family: a different base, more hardware, or a genuinely
+different data distribution *with the cap raised to let it in*. The engineering
+value of proving this is knowing when to STOP tuning: after three axes hit the
+same wall, the next training night on the same recipe is predictable, and the
+budget belongs on the out-of-family variable instead.
+
+## 8.15 A scaffold is worthless until measured against the failing cases
+
+When a class of tasks failed, the failure taxonomy was clear — the model would
+read the right code region and then stop, or emit an edit whose match-string was
+off by whitespace. Two harness scaffolds targeted exactly those: a "you read it,
+now edit" nudge, and a whitespace-tolerant edit-apply. Both were individually
+correct — the nudge fired on precisely the read-then-stop cases, unit tests
+green — and both moved the suite score by exactly zero.
+
+The trace explained it: nudged to edit the region it had just read, the model
+returned prose *again*. The wall was not "forgot to act" (which a nudge fixes)
+but edit-generation itself — deeper than any harness prompt reaches. And the
+whitespace-tolerant apply had no target, because the cases that reach
+edit-emission already passed; the ones that failed never got that far.
+
+The discipline: a scaffold that pattern-matches a failure *taxonomy* proves
+nothing. Measure it against the *failing cases*. Kept both as safe live guards
+(they cost nothing and may help the live distribution), but did not ship them as
+improvements — no measured gain earned that claim.

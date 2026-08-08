@@ -323,3 +323,20 @@ ours ended BELOW plain mixing on the knowledge score AND lost the flagship
 execution capability, because the gentle second stage neither preserved
 stage one nor delivered enough task dose to express the skill. Gate a
 curriculum like any other candidate — ours was, and the gate said no.
+
+### 29. A fixed synth cap turns "more synth" into "displaced synth"
+
+Doubling a synthetic-data source changed nothing about how much of it trained: a
+"majority-real" cap trimmed the extra rows before training, and within the fixed
+synthetic slice the enriched source merely displaced *other* synthetic rows — so
+the target metric stayed flat and the behavior the displaced rows carried
+regressed. Before enriching any capped input, confirm the cap even lets the
+extra through; otherwise enrichment is silently displacement.
+
+### 30. A correct scaffold can move nothing — measure against failing cases
+
+Two harness scaffolds targeted a clear failure taxonomy, were individually
+correct (one fired on exactly the right cases), and moved the suite score by
+zero: the failures never reached the step the scaffolds guarded. Pattern-matching
+a taxonomy is not evidence; measuring against the failing cases is. Keep a
+zero-gain-but-safe scaffold if you like, but don't ship it as an improvement.
