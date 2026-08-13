@@ -184,3 +184,46 @@ Add two generators to the P3 synthesis stage: **reasoning-chain** (multi-hop der
 **Strictly-local.** Every new path is filesystem + local-model only. The deterministic extractors are filesystem + `git`; the tools are read-only loopback MCP; the distill/synthesis LLM calls the *local* served model. Re-run the egress audit ([`17 § Runbook E`](17-runbooks.md)) after wiring any new sync step; default every model-load path offline ([`16 § 15`](16-lessons-and-fixes.md)).
 
 **Build order is a safety property, not a preference.** P1–P3 and R1–R2 are reversible and weight-free; P4 (and the imagined synth feeding it) is the only weight-touching path and runs only once the substrate *and* all the anti-collapse gates exist. You build the safety net before you walk the wire.
+
+## The graph in production: growth relations, freshness, and a daemon
+
+The deterministic substrate kept earning after the initial build. Four grounded
+relation families joined the base extractors, each provable and re-derivable:
+
+- **tests** — a fail-closed coverage edge: a test symbol links to a subject only
+  when the test module *imports* it AND the test function *references* it. No
+  naming guesses. (First-party detection matters: indexing a famous library's
+  own repo must not deny its own package name.)
+- **co-changed-with** — git-history coupling: files that repeatedly change
+  together, with mega-commit blast-radius bounding so a 50-file reformat cannot
+  mint C(50,2) fake pairs.
+- **may-raise** — bounded exception propagation along real call paths, each fact
+  carrying its proof path, confidence decaying per hop.
+- **transitively-depends-on** — module-dependency closure, run as a second
+  derivation phase because it reads the module facts phase one produces.
+
+Two operational pieces close the loop. A **source-freshness metric** reports how
+many commits each source checkout is behind its upstream, from git plumbing
+only — it exists because a production graph was once found built on a checkout
+hundreds of commits stale, and no internal health metric could see it. And an
+**event-driven daemon** turns that metric into maintenance: fetch, compare, and
+only when something is actually behind, fast-forward the *clean* repos (a dirty
+working tree is never touched) and rebuild. A single-instance lock makes
+overlapping passes skip instead of stacking writes. Quiet days cost nothing.
+
+## Open source: groundgraph
+
+The generic core of this layer is now public as **groundgraph** — a
+strictly-local, zero-runtime-dependency code-memory graph for coding agents
+(MIT): the deterministic extractors, the proof-carrying derivation layer, the
+trust tiers with query-time decay, the anti-rot and freshness dashboards, the
+watch daemon, serve-time recall with fired-signal instrumentation, an MCP stdio
+server, and a zero-dep agent-loop example. Indexing Flask end-to-end takes ~3
+seconds for ~12,500 facts, on stdlib Python alone.
+
+https://github.com/alleboudy/groundgraph
+
+The evaluation methodology (docs 19 §8.16-8.17) ships with it, null result
+included — `docs/honest-eval.md` in the repo. The pitch is the thesis of this
+whole chapter: a smaller graph of facts you can prove beats a bigger graph of
+facts you can vibe.

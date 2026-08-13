@@ -340,3 +340,36 @@ correct (one fired on exactly the right cases), and moved the suite score by
 zero: the failures never reached the step the scaffolds guarded. Pattern-matching
 a taxonomy is not evidence; measuring against the failing cases is. Keep a
 zero-gain-but-safe scaffold if you like, but don't ship it as an improvement.
+
+### 31. A null result without a fired-signal is unreadable
+
+Two augmentation arms went into an expensive eval; one recorded whether the
+treatment executed, the other recorded nothing. Had its input relations been
+missing, its 0 could not be told from "never ran." Instrument every arm
+symmetrically (injected flag, call count) and census the treatment's inputs
+before the run — or the null proves nothing.
+
+### 32. A multi-repo graph grounds tasks into the wrong repo
+
+Retrieval over a graph built from several repos, with no repo scoping,
+injected paths from sibling repos — well-formatted, plausible, and nonexistent
+in the task's workspace — on over half the cases. Scope grounding by repo, and
+existence-check every injected ref against the workspace before injection.
+"Fired" instrumentation does not prove "aimed."
+
+### 33. Greedy decoding is not deterministic across serving configs
+
+The same model, prompts, and temperature-0 sampling flipped three cases
+between a CPU-served run and a GPU-served run: different floating-point
+accumulation orders move near-tie argmax. Within one server, greedy is
+reproducible; across serving configs it is not. Pin the serving config when
+comparing against historical anchors.
+
+### 34. A target-file-only judge hides wrong-file edits
+
+The harness diffed and restored only each case's declared target file, so a
+"landed" edit that hit a *different* file showed as "no diff" — and the stray
+edit silently survived into later arms as workspace contamination. Mtime
+forensics found them post-hoc. Either snapshot/diff/restore the whole
+workspace, or at minimum detect and flag any write outside the declared
+target.

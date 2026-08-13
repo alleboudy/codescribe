@@ -554,6 +554,35 @@ reminder to measure a fix against the failing cases, not the taxonomy that
 inspired it (§8.15).</p>
 
 
+
+<h2>5.11 The recall null that survived its own audit — and the instrumentation that made it citable</h2>
+<p>The graph's serve-time recall layer (pre-injection grounding and agentic
+graph tools) went onto the diagnosis suite between a bare floor and a
+perfect-grounding oracle ceiling. A pre-run review caught that only one arm
+recorded whether the treatment actually executed — the other's null would have
+been unreadable ("does not help" vs "never ran" produce the same 0). Two cheap
+additions landed first: a per-case fired-signal on every arm, and a preflight
+census of the relations the lever consumes. The instrumented result: every
+augmented arm equaled the bare floor; the oracle took ~a quarter of the suite
+and still failed most cases on the <em>value</em> of the edit; the agentic arm
+showed the model consults the graph on fewer than a third of cases. The
+generation wall, measured from the retrieval side.</p>
+<p>A post-run adversarial audit then re-derived what the levers had actually
+injected, and sharpened the claim: the grounding query scoped by nothing over a
+multi-repo graph, so over half the cases received sibling-repo paths that did
+not exist in their workspace — <strong>fired is not aimed</strong>. Mtime
+forensics explained the "landed, no diff" rows as wrong-file edits the
+target-only judge could not see. And a serving-config change (CPU vs GPU)
+flipped greedy outputs against the historical anchor. The null survived all
+three findings — the oracle leg was unaffected — but each shipped as code:
+repo-scoped grounding, a pre-injection workspace existence-check, and pinned
+serving configs for anchors. Full prose: docs 19 §8.16-8.17, 16 landmines
+31-34.</p>
+<p>The generic core of the whole layer is public as
+<strong>groundgraph</strong> (MIT, zero runtime dependencies, MCP server,
+freshness daemon, honest-eval methodology with the null included):
+<code>github.com/alleboudy/groundgraph</code>.</p>
+
 <h1>Part VI — Landmines: the traps that already bit</h1>
 <p class="lead">Each cost real debugging time. Internalise them before touching the matching subsystem.</p>
 
@@ -615,6 +644,27 @@ correct (one fired on exactly the right cases), and moved the suite score by
 zero — the failures never reached the step they guarded. Pattern-matching a
 taxonomy is not evidence; measure against the failing cases before shipping a
 fix as an improvement.</p>
+
+
+<h3>22. A null without a fired-signal is unreadable</h3>
+<p>One eval arm recorded whether its treatment executed; the other recorded
+nothing — its 0 could not distinguish "does not help" from "never ran."
+Instrument every arm symmetrically and census the treatment's inputs before an
+expensive run.</p>
+<h3>23. A multi-repo graph grounds tasks into the wrong repo</h3>
+<p>Unscoped retrieval over a several-repo graph injected sibling-repo paths —
+well-formed and nonexistent in the task's workspace — on over half the cases.
+Scope grounding by repo and existence-check every injected ref against the
+workspace <em>before</em> injection. Fired instrumentation does not prove aim.</p>
+<h3>24. Greedy decoding is not deterministic across serving configs</h3>
+<p>Temperature-0 sampling flipped three cases between a CPU-served and a
+GPU-served run: floating-point accumulation order moves near-tie argmax. Pin
+the serving config when comparing against historical anchors.</p>
+<h3>25. A target-file-only judge hides wrong-file edits</h3>
+<p>The harness diffed and restored only each case's declared target, so an edit
+landing in a <em>different</em> file read as "no diff" and the stray survived
+into later arms as contamination. Snapshot/diff/restore the whole workspace, or
+at least flag any write outside the declared target.</p>
 
 <div class="note"><span class="lbl">Meta-lesson</span> Prefer <strong>evidence over assertion</strong> everywhere: a reproduced bug over a suspected one, a verified swap over an assumed one, the binary's own report over a schema you read, a runtime assertion that your fixed code is the code running. Almost every landmine bit because a plausible-looking assumption went unchecked.</div>
 </section>

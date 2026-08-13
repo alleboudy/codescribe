@@ -619,3 +619,63 @@ The discipline: a scaffold that pattern-matches a failure *taxonomy* proves
 nothing. Measure it against the *failing cases*. Kept both as safe live guards
 (they cost nothing and may help the live distribution), but did not ship them as
 improvements — no measured gain earned that claim.
+
+## 8.16 An interpretable null: instrument the lever before the run
+
+The memory graph grew a serve-time recall layer — two mechanisms. Pre-injection
+grounds a task's terms against the graph and prepends symbols with file:line,
+relations, and matching lessons. Agentic exposes `query_facts` /
+`explain_entity` as tools the model can call mid-task. Both went onto the
+diagnosis suite against two anchors: a bare floor and an oracle ceiling fed
+perfect grounding.
+
+The near-miss came before the run. The agentic arm recorded a per-case
+tool-call count; the pre-injection arm recorded *nothing*. A whole-system
+review caught the asymmetry: had the graph been missing its enrichment
+relations, pre-injection would have silently no-op'd on every case, and its 0
+would have been unreadable — "retrieval does not help" and "the lever never
+fired" produce the same number. Two cheap additions landed first: a per-case
+injected/grounded-symbols record, and a preflight per-predicate fact census
+that warns loudly when the relations the lever needs are absent.
+
+The instrumented result: every augmented arm equaled the bare floor exactly;
+the oracle ceiling sat at ~a quarter of the suite; injection provably fired on
+every case (5-6 grounded symbols each); and the agentic arm showed the model
+consulted the graph on fewer than a third of the cases — most of its null is
+"does not choose to retrieve," which no retrieval quality can fix. The oracle
+arm was handed file, symbol, and line and still failed most cases on the
+*value* of the edit. The wall is generation, measured now from the retrieval
+side too.
+
+The discipline: before an expensive measurement run, every arm carries a
+fired-signal (a call count, an injected flag — symmetric across arms), and the
+inputs the treatment consumes get a preflight census. Without both, a null is
+a wasted run: you cannot publish "it does not help" if you cannot rule out "it
+never ran."
+
+## 8.17 Fired is not aimed: verify what the lever actually injected
+
+A post-run adversarial review re-derived, deterministically, the exact context
+each injection arm had emitted — and checked every injected path against the
+case's own workspace. On over half the cases, most of the injected refs
+pointed at files that *did not exist there*. The graph spans several repos;
+the grounding query scoped by nothing. A task rooted in one repo received
+another repo's paths — plausible-looking, correctly formatted, and unopenable.
+The fired-signal had proven firing; it said nothing about aim.
+
+The same pass ran mtime forensics over the workspaces and explained a
+loose end: the arms that "landed" edits which produced no diff on the target
+file had, in fact, edited *other* files — a task about a login icon edited an
+unrelated icon component that a grep surfaced. The harness restores only the
+case's declared target and diffs only that file, so wrong-file edits were
+invisible to the judge and survived into later arms as tree contamination.
+One more confound surfaced for free: the anchor run months earlier had served
+on CPU, this one on GPU, and greedy decoding flipped three oracle cases
+between them — different floating-point accumulation orders break "greedy is
+deterministic" across serving configs.
+
+Three disciplines, all now shipped as code rather than advice: scope grounding
+by repo on any multi-repo graph; existence-check every injected ref against
+the agent's workspace *before* injection (a path the agent cannot open is
+worse than no path); and pin the serving config when citing cross-run anchors.
+The null survived the audit — but only the audit made it citable.
