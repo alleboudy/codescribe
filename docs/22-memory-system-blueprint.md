@@ -2,7 +2,8 @@
 
 **A from-scratch, agent-implementable specification for a deterministic
 code-memory graph over enterprise sources — Perforce, Bugzilla, git, the
-XTools toolchain, Polarion specification portals, and OneDrive documents —
+build/test toolchains, requirements & specification portals, and OneDrive
+documents —
 with a semantic sidecar, a fine-tuned embedding model for your
 organization's jargon, and the validation harness that keeps all of it
 honest.**
@@ -57,8 +58,8 @@ sources                     substrate                        consumers
 git ────────┐
 Perforce ───┤   extractors      ┌──────────────┐   derivations
 Bugzilla ───┤──(deterministic)──▶ entities     │──(proof-carrying)──┐
-XTools ─────┤                   │ facts        │◀───────────────────┘
-Polarion ───┤                   │ provenance   │
+toolchain ──┤                   │ facts        │◀───────────────────┘
+specs ──────┤                   │ provenance   │
 OneDrive ───┘                   │ embeddings   │
 tuned embedder ──(proposes)────▶└──────────────┘──(anti-rot dashboards)
 (local /v1/embeddings)                 │
@@ -271,21 +272,21 @@ embedding fine-tune (§8) needs.
   description. `cf_*` custom fields vary per instance — treat unknown
   fields as absent, never crash.
 
-### 3.4 XTools (the organization's toolchain) — the generic toolchain adapter
+### 3.4 Build/test toolchains — the generic toolchain adapter
 
-XTools is your in-house build/test/analysis toolchain; the implementing
-agent has its output formats in front of it, so this section specifies the
-ADAPTER CONTRACT rather than guessing formats. The same contract fits any
-toolchain that emits structured results (the pattern also covers e.g.
-Xcode's result bundles or a CI system, if those ever join the source list).
+Your build/test/analysis toolchain — a CI system, a compiler plus a test
+runner, a static analyzer — emits structured results, and the implementing
+agent has your toolchain's own output formats in front of it. So this section
+specifies the ADAPTER CONTRACT rather than guessing formats; the same contract
+fits any toolchain that emits structured results.
 
-- **Discover the structured outputs first.** Enumerate what XTools writes
+- **Discover the structured outputs first.** Enumerate what the toolchain writes
   per run — test-result files, static-analysis reports, build logs — and
   their formats (JSON/XML/log). Write ONE parser per format, pure (parses
   a string/bytes, no I/O), so every parser is testable on captured
   fixtures. Capture real fixture files into the test suite on day one.
-- **Facts to emit** (all `det:xtools@1`, run-scoped provenance
-  `xtools:<run-id>`):
+- **Facts to emit** (all `det:toolchain@1`, run-scoped provenance
+  `toolrun:<run-id>`):
   - `test-run passed|failed test-symbol` — outcomes CORROBORATE the static
     `tests` relation (§5): a test that exists and passes is stronger
     evidence than a test that merely exists. On failure, the message +
@@ -302,20 +303,23 @@ Xcode's result bundles or a CI system, if those ever join the source list).
   platform, debug/release) are distinct run entities, or a passing release
   run will supersede a failing debug run's evidence.
 
-### 3.5 Polarion (the specification portal)
+### 3.5 Requirements & specification portals
 
 Requirements and specs are the vocabulary bridge between "what the product
-must do" and "where the code does it" — and Polarion's work-item links make
-that bridge deterministic.
+must do" and "where the code does it" — and a requirements-management portal's
+typed work-item links make that bridge deterministic. Most enterprise
+specification tools expose the same shape over a REST API: work items with
+typed links to revisions, tests, and defects.
 
-- **Sync**: the Polarion REST API, per project: work items with
+- **Sync**: the portal's REST API, per project: work items with
   `include_fields`-style narrowing, paged, incremental via each item's
   `updated` timestamp as the cursor. Auth by personal access token in the
-  OS credential store (§9). LiveDoc documents CONTAIN work items — ingest
-  the work items through the API, not the document HTML.
-- **Entities**: `kind=spec-item`, `name=<PROJ-1234>`, the title in `meta`.
-- **Facts** (all `det:polarion@1`, provenance = the work-item URL):
-  - typed link facts from Polarion's own link roles: `spec-item
+  OS credential store (§9). Where the portal renders live spec documents
+  that CONTAIN work items, ingest the work items through the API, not the
+  rendered document HTML.
+- **Entities**: `kind=spec-item`, `name=<SPEC-ID>`, the title in `meta`.
+- **Facts** (all `det:spec@1`, provenance = the work-item URL):
+  - typed link facts from the portal's own typed link roles: `spec-item
     implemented-by changelist|commit` (from revision links / linked
     revisions), `spec-item verified-by test-case`, `spec-item links-to
     bug` (Bugzilla cross-links), parent/child structure as `part-of`.
@@ -330,7 +334,8 @@ that bridge deterministic.
   instance's actual role IDs at sync start and map them explicitly; an
   unmapped role is skipped and COUNTED, never guessed. Work items are
   revisioned — use the revision as `valid_from` and soft-supersede on
-  update (state, not history). Suspect/stale link flags in Polarion mean
+  update (state, not history). Suspect/stale link flags (most portals expose
+  one) mean
   the link needs human re-validation — carry the flag into `meta`, and
   exclude suspect links from `det:` (drop to a lower-confidence tier).
   Access-restricted spaces 403 like Bugzilla's private bugs: count and
@@ -558,7 +563,7 @@ graph you already built** — no annotation project:
 | pair | source | why it teaches jargon |
 |---|---|---|
 | bug title+description ↔ source windows of files the fixing CL touched | Bugzilla × Perforce `fixed-by`/`touches` joins | maps SYMPTOM vocabulary to code — the highest-value pairs you own |
-| requirement title+text ↔ source windows of implementing-CL files | Polarion × Perforce `implemented-by`/`touches` joins | maps SPEC vocabulary to code — the compliance-grade pairs |
+| requirement title+text ↔ source windows of implementing-CL files | spec-portal × Perforce `implemented-by`/`touches` joins | maps SPEC vocabulary to code — the compliance-grade pairs |
 | commit/CL message ↔ changed-file windows | git / `p4 describe` | maps intent language to code |
 | doc section ↔ its `cites` file:line windows | lesson extraction | maps design/runbook language to code |
 | test name + docstring ↔ subject-symbol window | the `tests` relation | maps behavior names to implementations |
@@ -735,8 +740,8 @@ Each milestone: build → its §10.1 tests green → acceptance check → commit
 | M6 | MCP server + agentic tools | stdio subprocess round-trip green; registered in the IDE and answering |
 | M7 | Perforce adapter | integrate-CL skip + path mapping tests; co-change parity with git shapes |
 | M8 | Bugzilla adapter | fixed-by strict-regex tests; restricted-bug counting; dup-chain terminal |
-| M9 | XTools adapter | fixture-driven parsers; outcomes + bounded/superseded diagnostics; unknown schema fails closed |
-| M10 | Polarion adapter | link-role mapping enumerated; implemented-by/touches joins; suspect links demoted; revision supersession |
+| M9 | Toolchain adapter (build/test results) | fixture-driven parsers; outcomes + bounded/superseded diagnostics; unknown schema fails closed |
+| M10 | Specifications-portal adapter | link-role mapping enumerated; implemented-by/touches joins; suspect links demoted; revision supersession |
 | M11 | OneDrive adapter | delta-cursor sync; docx-via-zip extraction; auth in OS store |
 | M12 | semantic sidecar (off-the-shelf embedder) | complementarity test green; endpoint-down degradation |
 | M13 | embedder fine-tune + gated promotion | pairs mined from the graph; held-out recall@k beats baseline; frozen eval checksummed |
