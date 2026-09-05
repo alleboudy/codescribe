@@ -728,6 +728,10 @@ these. An index whose size jumps on rebuild gets its *composition* diffed
 
 ## 12. Milestones for the implementing agent
 
+> Once the milestones ship, the system's *life* — schedules, consolidation
+> nights, backups, restores, and node setup — is chapter
+> [23](23-memory-operations-and-lifecycle.md).
+
 Each milestone: build → its §10.1 tests green → acceptance check → commit.
 
 | # | deliverable | acceptance |
