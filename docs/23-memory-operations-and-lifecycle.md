@@ -221,7 +221,40 @@ letting idempotence tear down what moved.
 
 ---
 
-## 6. The operator's one-page cheat sheet
+## 6. Replica fan-out: warm copies on every node
+
+Once the single-node topology (§5.2) runs, resilience comes back cheaply:
+an hourly job on the builder pushes read-only replicas to the other
+machines — LAN bytes, never the metered link. The rules that make it
+boring:
+
+1. **Snapshot first, ship second.** `VACUUM INTO` a staging copy (one
+   consistent file, WAL folded), then rsync THAT — never the live db.
+2. **Change-detect per file.** Stamp each source db's `(mtime, size)`
+   after a successful snapshot; an unchanged db ships nothing. The big
+   semantic index then moves once a day (after its nightly), while the
+   graph moves hourly.
+3. **Atomic landing.** Push to `.name.tmp`, `mv` into place, and delete
+   the target's stale `-wal`/`-shm` sidecars (§4's trap applies to
+   replicas exactly as to restores).
+4. **One Slack line per updated node, with deltas.** Read the node's old
+   counts BEFORE overwriting, the new counts from the snapshot, and post
+   "facts old→new (+delta), superseded, episodes, consolidation runs,
+   copy seconds". A replica update you can read is a replica update you
+   will notice failing.
+5. **Skip loudly, retry next tick.** An unreachable node is a log line
+   and a missing Slack message — never a failed pass. A mkdir lock (works
+   on macOS too, where there is no flock) keeps a slow pass and the next
+   tick apart.
+
+The same lamp discipline from the bandwidth observatory applies: replica
+pushes are LAN traffic, so give LAN its own **blue** alert (free bytes
+today; the volume that would land on the metered link if that node moved
+out of the network) and keep the **red** lamp for true WAN. A monitor
+whose colors encode "costs money now" vs "would cost money after a
+topology change" answers capacity questions before they are asked.
+
+## 7. The operator's one-page cheat sheet
 
 ```
 is it fresh?     tail the update-tick log; look for "nothing to do" ticks
